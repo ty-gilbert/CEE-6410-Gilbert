@@ -1,0 +1,239 @@
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:27:38 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+      CEE 6410 - Water Resources Systems Analysis
+      Example 2.1 from Bishop Et Al Text (https://digitalcommons.usu.edu/ecstatic_all/76/)
+      Modifies Example to fit problem 2.3
+       
+      Further modification for irrigation problem ( with June, July, Aug, and total acre constraints)
+       
+      THE PROBLEM:
+       
+      An irrigated farm can be planted in two crops:  hay and grain.
+      Each month has a water requirement for each crop and an available amount of water in acft.
+      Additionaly the total acres must not exceed 10,
+      Data are as fol-lows:
+       
+       
+      Inputs or Profit        Crops        Months
+      Availability
+                      Hay             Grain
+      June            2 acft/acre     1 acft/acre     14,000 acft
+      July            1 acft/acre     2 acft/acre     18,000 acft
+      Aug             1 acft/acre     0 acft/acre      6,000 acft
+      Total acres     1 acft/acre     1 acft/acre     10,000 acre
+      Profit/acre     $100/acre       $120/acre
+       
+                      Determine the optimal planting for the two crops.
+       
+      THE SOLUTION:
+      Uses General Algebraic Modeling System to Solve this Linear Program
+       
+      Ty Gilbert
+      A02298741@usu.edu
+      September 24, 2025
+  34   
+  35  * 1. DEFINE the SETS
+  36  SETS crops crops produced /hay, grain/
+  37       month months and other acreage constraint /June, July, Aug, tot/;
+  38   
+  39  * 2. DEFINE input data
+  40  PARAMETERS
+  41     cropprofit(crops) Objective function coefficients ($ per acre of crop)
+  42           /hay 100,
+  43           grain 120/
+  44     cropconstraints(month) Righthand constraint values for crop production (per month)
+  45            /June 14000,
+  46             July 18000,
+  47             Aug  6000
+  48             tot  10000/;
+  49   
+  50  TABLE A(crops, month) Left hand side constraint coefficients
+  51              June    July    Aug     Tot
+  52   Hay        2       1       1       1
+  53   Grain      1       2       0       1;
+  54   
+  55   
+  56  * 3. DEFINE the variables
+  57  VARIABLES X(crops) crops produced (acres)
+  58            CPROFIT  total profit from producing crops($);
+  59   
+  60  * Non-negativity constraints
+  61  POSITIVE VARIABLES X;
+  62   
+  63  * 4. COMBINE variables and data in equations
+  64  EQUATIONS
+  65     PROFIT Total profit ($) and objective function value
+  66     MONTH_CONSTRAIN(month) Monthly Constraints;
+  67   
+  68  PROFIT..                 CPROFIT =E= SUM(crops, cropprofit(crops)*X(crops));
+  69  MONTH_CONSTRAIN(month) ..    SUM(crops, A(crops, month)*X(crops)) =L= cropconstraints(month);
+  70   
+  71   
+  72  * 5. DEFINE the MODEL from the EQUATIONS
+  73  MODEL CROPPRODUCTION /PROFIT, MONTH_CONSTRAIN/;
+  74   
+  75   
+  76  * 6. SOLVE the MODEL
+  77  * Solve the CROPPRODUCTION model using a Linear Programming Solver (see File=>Options=>Solvers)
+  78  *     to maximize CPROFIT
+  79  SOLVE CROPPRODUCTION USING LP MAXIMIZING CPROFIT;
+  80   
+  81  * 6. CLick File menu => RUN (F9) or Solve icon and examine solution report in .LST file
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:27:38 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Equation Listing    SOLVE CROPPRODUCTION Using LP From line 79
+
+
+---- PROFIT  =E=  Total profit ($) and objective function value
+
+PROFIT..  - 100*X(hay) - 120*X(grain) + CPROFIT =E= 0 ; (LHS = 0)
+     
+
+---- MONTH_CONSTRAIN  =L=  Monthly Constraints
+
+MONTH_CONSTRAIN(June)..  2*X(hay) + X(grain) =L= 14000 ; (LHS = 0)
+     
+MONTH_CONSTRAIN(July)..  X(hay) + 2*X(grain) =L= 18000 ; (LHS = 0)
+     
+MONTH_CONSTRAIN(Aug)..  X(hay) =L= 6000 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:27:38 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Column Listing      SOLVE CROPPRODUCTION Using LP From line 79
+
+
+---- X  crops produced (acres)
+
+X(hay)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+     -100       PROFIT
+        2       MONTH_CONSTRAIN(June)
+        1       MONTH_CONSTRAIN(July)
+        1       MONTH_CONSTRAIN(Aug)
+        1       MONTH_CONSTRAIN(tot)
+
+X(grain)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+     -120       PROFIT
+        1       MONTH_CONSTRAIN(June)
+        2       MONTH_CONSTRAIN(July)
+        1       MONTH_CONSTRAIN(tot)
+
+
+---- CPROFIT  total profit from producing crops($)
+
+CPROFIT
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       PROFIT
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:27:38 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Range Statistics    SOLVE CROPPRODUCTION Using LP From line 79
+
+
+RANGE STATISTICS (ABSOLUTE NON-ZERO FINITE VALUES)
+
+RHS       [min, max] : [ 6.000E+03, 1.800E+04] - Zero values observed as well
+Bound     [min, max] : [        NA,        NA] - Zero values observed as well
+Matrix    [min, max] : [ 1.000E+00, 1.200E+02]
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:27:38 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE CROPPRODUCTION Using LP From line 79
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           2     SINGLE EQUATIONS            5
+BLOCKS OF VARIABLES           2     SINGLE VARIABLES            3
+NON ZERO ELEMENTS            10
+
+
+GENERATION TIME      =        0.016 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:27:38 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE CROPPRODUCTION Using LP From line 79
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   CROPPRODUCTION      OBJECTIVE  CPROFIT
+     TYPE    LP                  DIRECTION  MAXIMIZE
+     SOLVER  CPLEX               FROM LINE  79
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      1 Optimal
+**** OBJECTIVE VALUE          1160000.0000
+
+ RESOURCE USAGE, LIMIT          0.000 10000000000.000
+ ITERATION COUNT, LIMIT         3    2147483647
+*** This solver runs with a community license.
+--- GMO setup time: 0.00s
+--- GMO memory 0.50 Mb (peak 0.50 Mb)
+--- Dictionary memory 0.00 Mb
+--- Cplex 22.1.2.0 link memory 0.00 Mb (peak 0.00 Mb)
+--- Starting Cplex
+
+
+--- LP status (1): optimal.
+--- Cplex Time: 0.00sec (det. 0.01 ticks)
+
+
+Optimal solution found
+Objective:      1160000.000000
+
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU PROFIT              .              .              .             1.0000      
+
+  PROFIT  Total profit ($) and objective function value
+
+---- EQU MONTH_CONSTRAIN  Monthly Constraints
+
+            LOWER          LEVEL          UPPER         MARGINAL
+
+June        -INF        12000.0000     14000.0000          .          
+July        -INF        18000.0000     18000.0000        20.0000      
+Aug         -INF         2000.0000      6000.0000          .          
+tot         -INF        10000.0000     10000.0000        80.0000      
+
+---- VAR X  crops produced (acres)
+
+             LOWER          LEVEL          UPPER         MARGINAL
+
+hay            .          2000.0000        +INF             .          
+grain          .          8000.0000        +INF             .          
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR CPROFIT           -INF      1160000.0000        +INF             .          
+
+  CPROFIT  total profit from producing crops($)
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+
+
+EXECUTION TIME       =        0.125 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+
+
+USER: Course License                                 G250902+0003Ac-GEN
+      Utah State University                                     DCE4709
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW3-Irrigation.gms
+Output     C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW3-Irrigation.lst

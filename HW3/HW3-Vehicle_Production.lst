@@ -1,0 +1,240 @@
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:24:56 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+      CEE 6410 - Water Resources Systems Analysis
+      Example 2.1 from Bishop Et Al Text (https://digitalcommons.usu.edu/ecstatic_all/76/)
+      Modifies Example to fit problem 2.3
+       
+      Further modification for Vehicle Production problem ( with tanks, rows of seats,
+      four-wheel drive systems, and total vehicle constraints)
+       
+      THE PROBLEM:
+       
+      A motor vehicle company can produce two types of vehicles: Trucks and Sedans.
+      There are a total of 14000 tanks, 18000 rows of seats, and 6000 four-wheel drive systems.
+      Additionaly the total vehicles produced must not exceed 10000,
+      Data are as fol-lows:
+       
+       
+      Inputs or Profit        Vehicles        Resources
+      Availability
+                      Trucks              Sedans              Available
+      Tanks           2 per vehicle       1 per vehicle       14,000 tanks
+      Rows of Seats   1 rows/vehicle      2 per vehicle       18,000 rows
+      4WD Systems     1 per vehicle       0 per vehicle       6,000 4WD
+      Total vehicles     1 per vehicle       1 per vehicle       10,000 vehicles
+      Profit/Vehicle  $100 per vehicle    $120 per vehicle   
+       
+          Determine the optimal production for the two vehicles.
+       
+      THE SOLUTION:
+      Uses General Algebraic Modeling System to Solve this Linear Program
+       
+      Ty Gilbert
+      A02298741@usu.edu
+      September 24, 2025
+  35   
+  36  * 1. DEFINE the SETS
+  37  SETS vehicles vehicles produced /truck, sedan/
+  38       res resources /tanks, rows, four_wd, total_vehicle/;
+  39   
+  40  * 2. DEFINE input data
+  41  PARAMETERS
+  42     vehicleprofit(vehicles) Objective function coefficients ($ profit per vehicle)
+  43           /truck 100,
+  44           sedan 110/
+  45     vehicleconstraints(res) Righthand constraint values for vehicle production (per resource)
+  46            /tanks 14000,
+  47             rows 18000,
+  48             four_wd  6000
+  49             total_vehicle  10000/;
+  50   
+  51  TABLE A(vehicles, res) Left hand side constraint coefficients
+  52              tanks   rows    four_wd     total_vehicle
+  53   Truck      2       1       1           1
+  54   Sedan      1       2       0           1;
+  55   
+  56   
+  57  * 3. DEFINE the variables
+  58  VARIABLES X(vehicles) vehicles produced (#)
+  59            CPROFIT  total profit from producing vehicles($);
+  60   
+  61  * Non-negativity constraints
+  62  POSITIVE VARIABLES X;
+  63   
+  64  * 4. COMBINE variables and data in equations
+  65  EQUATIONS
+  66     PROFIT Total profit ($) and objective function value
+  67     RES_CONSTRAIN(res) resly Constraints;
+  68   
+  69  PROFIT..                 CPROFIT =E= SUM(vehicles, vehicleprofit(vehicles)*X(vehicles));
+  70  RES_CONSTRAIN(res) ..    SUM(vehicles, A(vehicles, res)*X(vehicles)) =L= vehicleconstraints(res);
+  71   
+  72   
+  73  * 5. DEFINE the MODEL from the EQUATIONS
+  74  MODEL VEHICLEPRODUCTION /PROFIT, RES_CONSTRAIN/;
+  75   
+  76   
+  77  * 6. SOLVE the MODEL
+  78  * Solve the VEHICLEPRODUCTION model using a Linear Programming Solver (see File=>Options=>Solvers)
+  79  *     to maximize CPROFIT
+  80  SOLVE VEHICLEPRODUCTION USING LP MAXIMIZING CPROFIT;
+  81   
+  82  * 6. CLick File menu => RUN (F9) or Solve icon and examine solution report in .LST file
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:24:56 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Equation Listing    SOLVE VEHICLEPRODUCTION Using LP From line 80
+
+
+---- PROFIT  =E=  Total profit ($) and objective function value
+
+PROFIT..  - 100*X(truck) - 110*X(sedan) + CPROFIT =E= 0 ; (LHS = 0)
+     
+
+---- RES_CONSTRAIN  =L=  resly Constraints
+
+RES_CONSTRAIN(tanks)..  2*X(truck) + X(sedan) =L= 14000 ; (LHS = 0)
+     
+RES_CONSTRAIN(rows)..  X(truck) + 2*X(sedan) =L= 18000 ; (LHS = 0)
+     
+RES_CONSTRAIN(four_wd)..  X(truck) =L= 6000 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:24:56 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Column Listing      SOLVE VEHICLEPRODUCTION Using LP From line 80
+
+
+---- X  vehicles produced (#)
+
+X(truck)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+     -100       PROFIT
+        2       RES_CONSTRAIN(tanks)
+        1       RES_CONSTRAIN(rows)
+        1       RES_CONSTRAIN(four_wd)
+        1       RES_CONSTRAIN(total_vehicle)
+
+X(sedan)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+     -110       PROFIT
+        1       RES_CONSTRAIN(tanks)
+        2       RES_CONSTRAIN(rows)
+        1       RES_CONSTRAIN(total_vehicle)
+
+
+---- CPROFIT  total profit from producing vehicles($)
+
+CPROFIT
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       PROFIT
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:24:56 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Range Statistics    SOLVE VEHICLEPRODUCTION Using LP From line 80
+
+
+RANGE STATISTICS (ABSOLUTE NON-ZERO FINITE VALUES)
+
+RHS       [min, max] : [ 6.000E+03, 1.800E+04] - Zero values observed as well
+Bound     [min, max] : [        NA,        NA] - Zero values observed as well
+Matrix    [min, max] : [ 1.000E+00, 1.100E+02]
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:24:56 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE VEHICLEPRODUCTION Using LP From line 80
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           2     SINGLE EQUATIONS            5
+BLOCKS OF VARIABLES           2     SINGLE VARIABLES            3
+NON ZERO ELEMENTS            10
+
+
+GENERATION TIME      =        0.172 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 09/24/25 21:24:56 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE VEHICLEPRODUCTION Using LP From line 80
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   VEHICLEPRODUCTION   OBJECTIVE  CPROFIT
+     TYPE    LP                  DIRECTION  MAXIMIZE
+     SOLVER  CPLEX               FROM LINE  80
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      1 Optimal
+**** OBJECTIVE VALUE          1080000.0000
+
+ RESOURCE USAGE, LIMIT          0.016 10000000000.000
+ ITERATION COUNT, LIMIT         3    2147483647
+*** This solver runs with a community license.
+--- GMO setup time: 0.00s
+--- GMO memory 0.50 Mb (peak 0.50 Mb)
+--- Dictionary memory 0.00 Mb
+--- Cplex 22.1.2.0 link memory 0.00 Mb (peak 0.00 Mb)
+--- Starting Cplex
+
+
+--- LP status (1): optimal.
+--- Cplex Time: 0.02sec (det. 0.01 ticks)
+
+
+Optimal solution found
+Objective:      1080000.000000
+
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU PROFIT              .              .              .             1.0000      
+
+  PROFIT  Total profit ($) and objective function value
+
+---- EQU RES_CONSTRAIN  resly Constraints
+
+                     LOWER          LEVEL          UPPER         MARGINAL
+
+tanks                -INF        12000.0000     14000.0000          .          
+rows                 -INF        18000.0000     18000.0000        10.0000      
+four_wd              -INF         2000.0000      6000.0000          .          
+total_vehicle        -INF        10000.0000     10000.0000        90.0000      
+
+---- VAR X  vehicles produced (#)
+
+             LOWER          LEVEL          UPPER         MARGINAL
+
+truck          .          2000.0000        +INF             .          
+sedan          .          8000.0000        +INF             .          
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR CPROFIT           -INF      1080000.0000        +INF             .          
+
+  CPROFIT  total profit from producing vehicles($)
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+
+
+EXECUTION TIME       =        0.563 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+
+
+USER: Course License                                 G250902+0003Ac-GEN
+      Utah State University                                     DCE4709
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW3-Vehicle_Production.gms
+Output     C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW3-Vehicle_Production.lst
