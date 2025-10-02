@@ -1,0 +1,441 @@
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/01/25 22:51:16 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+      CEE 6410 - Water Resources Systems Analysis
+      Homework 5: Reservoir Operation Problem
+       
+      THE PROBLEM:
+      A reservoir is designed to provide hydropower and water for irrigation.
+      - Hydropower turbines have a capacity of 4 units of water per month.
+      - At least one unit of water must be kept in the river each month at point A.
+      - The reservoir has a capacity of 9 units.
+      - Initial storage is 5 units.
+      - Ending storage must be equal to or greater than the beginning storage.
+       
+      THE SOLUTION:
+      This GAMS model uses Linear Programming to determine the monthly reservoir
+      releases that maximize the total economic benefits from hydropower and irrigation
+      over a 6-month period.
+       
+      Ty Gilbert
+      A02298741@usu.edu
+      October 01, 2025
+  22   
+  23  * 1. DEFINE the SETS
+  24  SETS
+  25      spatial Locations and flow types /storage, turbine, spill, irrigation, flow_at_A/
+  26      month   Time periods             /month1*month6/;
+  27   
+  28  * 2. DEFINE input data
+  29  SCALARS
+  30      TurbineCapacity     Max release through turbines      / 4 /
+  31      MinFlowAtA          Minimum in-stream flow at point A / 1 /
+  32      ReservoirCapacity   Max storage volume in reservoir   / 9 /
+  33      InitialStorage      Storage at the beginning of month1/ 5 /;
+  34   
+  35  PARAMETERS
+  36      HB(month) Hydro Benefits per month /
+  37          month1 1.6,
+  38          month2 1.7,
+  39          month3 1.8,
+  40          month4 1.9,
+  41          month5 2.0,
+  42          month6 2.0 /
+  43   
+  44      IB(month) Irrigation benefits per month /
+  45          month1 1.0,
+  46          month2 1.2,
+  47          month3 1.9,
+  48          month4 2.0,
+  49          month5 2.2,
+  50          month6 2.2 /
+  51   
+  52      ResInflow(month) Reservoir inflow into system per month /
+  53          month1 2,
+  54          month2 2,
+  55          month3 3,
+  56          month4 4,
+  57          month5 3,
+  58          month6 2 /;
+  59   
+  60  * 3. DEFINE the variables
+  61  VARIABLES
+  62      X(spatial, month) Decision variables for flows and storage
+  63      VPROFIT           Objective Function value ($);
+  64   
+  65  * Non-negativity constraints
+  66  POSITIVE VARIABLE X;
+  67   
+  68  * 4. COMBINE variables and data in equations
+  69  EQUATIONS
+  70      PROFIT              Total profit and objective function
+  71      TURBINECAP          Upper limit on turbine releases
+  72      STORAGECAP          Upper limit on reservoir storage
+  73      FLOWATADEF          Definition of flow at point A
+  74      MIN_A_FLOW          Minimum flow constraint at point A
+  75      IRRIGSOURCE         Irrigation water is a subset of total release
+  76      RESMASSBAL          Reservoir Mass Balance in each month
+  77      FINALSTORAGECON     Constraint on final storage level;
+  78   
+  79  PROFIT..
+  80      VPROFIT =E= SUM(month, HB(month)*X("turbine", month) + IB(month)*X("irrigation", month));
+  81   
+  82  TURBINECAP(month)..
+  83      X("turbine", month) =L= TurbineCapacity;
+  84   
+  85  STORAGECAP(month)..
+  86      X("storage", month) =L= ReservoirCapacity;
+  87   
+  88  FLOWATADEF(month)..
+  89      X("flow_at_A", month) =E= X("turbine", month) + X("spill", month) - X("irrigation", month);
+  90   
+  91  MIN_A_FLOW(month)..
+  92      X("flow_at_A", month) =G= MinFlowAtA;
+  93   
+  94  IRRIGSOURCE(month)..
+  95      X("irrigation", month) =L= X("turbine", month) + X("spill", month);
+  96   
+  97  RESMASSBAL(month)..
+  98      X("storage", month) =E= (X("storage", month-1)$(ord(month)>1) + InitialStorage$(ord(month)=1))
+  99                             + ResInflow(month) - X("turbine", month) - X("spill", month);
+ 100   
+ 101  FINALSTORAGECON..
+ 102      X("storage", "month6") =G= InitialStorage;
+ 103   
+ 104  * 5. DEFINE the MODEL from the EQUATIONS
+ 105  MODEL ReservoirModel Model for Reservoir Operation /ALL/;
+ 106   
+ 107  * 6. SOLVE the MODEL
+ 108  SOLVE ReservoirModel USING LP MAXIMIZING VPROFIT;
+ 109   
+ 110  * 7. DISPLAY the results
+ 111  DISPLAY X.L, VPROFIT.L;
+ 112   
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/01/25 22:51:16 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Equation Listing    SOLVE ReservoirModel Using LP From line 108
+
+
+---- PROFIT  =E=  Total profit and objective function
+
+PROFIT..  - 1.6*X(turbine,month1) - 1.7*X(turbine,month2) - 1.8*X(turbine,month3) - 1.9*X(turbine,month4) - 2*X(turbine,month5) - 2*X(turbine,month6) - X(irrigation,month1) - 1.2*X(irrigation,month2) - 1.9*X(irrigation,month3) - 2*X(irrigation,month4) - 2.2*X(irrigation,month5) - 2.2*X(irrigation,month6) + VPROFIT =E= 0 ; (LHS = 0)
+     
+
+---- TURBINECAP  =L=  Upper limit on turbine releases
+
+TURBINECAP(month1)..  X(turbine,month1) =L= 4 ; (LHS = 0)
+     
+TURBINECAP(month2)..  X(turbine,month2) =L= 4 ; (LHS = 0)
+     
+TURBINECAP(month3)..  X(turbine,month3) =L= 4 ; (LHS = 0)
+     
+REMAINING 3 ENTRIES SKIPPED
+
+
+---- STORAGECAP  =L=  Upper limit on reservoir storage
+
+STORAGECAP(month1)..  X(storage,month1) =L= 9 ; (LHS = 0)
+     
+STORAGECAP(month2)..  X(storage,month2) =L= 9 ; (LHS = 0)
+     
+STORAGECAP(month3)..  X(storage,month3) =L= 9 ; (LHS = 0)
+     
+REMAINING 3 ENTRIES SKIPPED
+
+
+---- FLOWATADEF  =E=  Definition of flow at point A
+
+FLOWATADEF(month1)..  - X(turbine,month1) - X(spill,month1) + X(irrigation,month1) + X(flow_at_A,month1) =E= 0 ; (LHS = 0)
+     
+FLOWATADEF(month2)..  - X(turbine,month2) - X(spill,month2) + X(irrigation,month2) + X(flow_at_A,month2) =E= 0 ; (LHS = 0)
+     
+FLOWATADEF(month3)..  - X(turbine,month3) - X(spill,month3) + X(irrigation,month3) + X(flow_at_A,month3) =E= 0 ; (LHS = 0)
+     
+REMAINING 3 ENTRIES SKIPPED
+
+
+---- MIN_A_FLOW  =G=  Minimum flow constraint at point A
+
+MIN_A_FLOW(month1)..  X(flow_at_A,month1) =G= 1 ; (LHS = 0, INFES = 1 ****)
+     
+MIN_A_FLOW(month2)..  X(flow_at_A,month2) =G= 1 ; (LHS = 0, INFES = 1 ****)
+     
+MIN_A_FLOW(month3)..  X(flow_at_A,month3) =G= 1 ; (LHS = 0, INFES = 1 ****)
+     
+REMAINING 3 ENTRIES SKIPPED
+
+
+---- IRRIGSOURCE  =L=  Irrigation water is a subset of total release
+
+IRRIGSOURCE(month1)..  - X(turbine,month1) - X(spill,month1) + X(irrigation,month1) =L= 0 ; (LHS = 0)
+     
+IRRIGSOURCE(month2)..  - X(turbine,month2) - X(spill,month2) + X(irrigation,month2) =L= 0 ; (LHS = 0)
+     
+IRRIGSOURCE(month3)..  - X(turbine,month3) - X(spill,month3) + X(irrigation,month3) =L= 0 ; (LHS = 0)
+     
+REMAINING 3 ENTRIES SKIPPED
+
+
+---- RESMASSBAL  =E=  Reservoir Mass Balance in each month
+
+RESMASSBAL(month1)..  X(storage,month1) + X(turbine,month1) + X(spill,month1) =E= 7 ; (LHS = 0, INFES = 7 ****)
+     
+RESMASSBAL(month2)..  - X(storage,month1) + X(storage,month2) + X(turbine,month2) + X(spill,month2) =E= 2 ; (LHS = 0, INFES = 2 ****)
+     
+RESMASSBAL(month3)..  - X(storage,month2) + X(storage,month3) + X(turbine,month3) + X(spill,month3) =E= 3 ; (LHS = 0, INFES = 3 ****)
+     
+REMAINING 3 ENTRIES SKIPPED
+
+
+---- FINALSTORAGECON  =G=  Constraint on final storage level
+
+FINALSTORAGECON..  X(storage,month6) =G= 5 ; (LHS = 0, INFES = 5 ****)
+     
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/01/25 22:51:16 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Column Listing      SOLVE ReservoirModel Using LP From line 108
+
+
+---- X  Decision variables for flows and storage
+
+X(storage,month1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       STORAGECAP(month1)
+        1       RESMASSBAL(month1)
+       -1       RESMASSBAL(month2)
+
+X(storage,month2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       STORAGECAP(month2)
+        1       RESMASSBAL(month2)
+       -1       RESMASSBAL(month3)
+
+X(storage,month3)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       STORAGECAP(month3)
+        1       RESMASSBAL(month3)
+       -1       RESMASSBAL(month4)
+
+REMAINING 27 ENTRIES SKIPPED
+
+---- VPROFIT  Objective Function value ($)
+
+VPROFIT
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       PROFIT
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/01/25 22:51:16 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Range Statistics    SOLVE ReservoirModel Using LP From line 108
+
+
+RANGE STATISTICS (ABSOLUTE NON-ZERO FINITE VALUES)
+
+RHS       [min, max] : [ 1.000E+00, 9.000E+00] - Zero values observed as well
+Bound     [min, max] : [        NA,        NA] - Zero values observed as well
+Matrix    [min, max] : [ 1.000E+00, 2.200E+00]
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/01/25 22:51:16 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE ReservoirModel Using LP From line 108
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           8     SINGLE EQUATIONS           38
+BLOCKS OF VARIABLES           2     SINGLE VARIABLES           31
+NON ZERO ELEMENTS            97
+
+
+GENERATION TIME      =        0.016 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/01/25 22:51:16 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE ReservoirModel Using LP From line 108
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   ReservoirModel      OBJECTIVE  VPROFIT
+     TYPE    LP                  DIRECTION  MAXIMIZE
+     SOLVER  CPLEX               FROM LINE  108
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      1 Optimal
+**** OBJECTIVE VALUE               51.6000
+
+ RESOURCE USAGE, LIMIT          0.000 10000000000.000
+ ITERATION COUNT, LIMIT         9    2147483647
+*** This solver runs with a community license.
+--- GMO setup time: 0.00s
+--- GMO memory 0.50 Mb (peak 0.50 Mb)
+--- Dictionary memory 0.00 Mb
+--- Cplex 22.1.2.0 link memory 0.00 Mb (peak 0.00 Mb)
+--- Starting Cplex
+
+
+--- LP status (1): optimal.
+--- Cplex Time: 0.00sec (det. 0.06 ticks)
+
+
+Optimal solution found
+Objective:           51.600000
+
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU PROFIT              .              .              .             1.0000      
+
+  PROFIT  Total profit and objective function
+
+---- EQU TURBINECAP  Upper limit on turbine releases
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+month1        -INF            1.0000         4.0000          .          
+month2        -INF            1.0000         4.0000          .          
+month3        -INF            2.0000         4.0000          .          
+month4        -INF            4.0000         4.0000         0.2000      
+month5        -INF            4.0000         4.0000         0.5000      
+month6        -INF            4.0000         4.0000         0.5000      
+
+---- EQU STORAGECAP  Upper limit on reservoir storage
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+month1        -INF            6.0000         9.0000          .          
+month2        -INF            7.0000         9.0000          .          
+month3        -INF            8.0000         9.0000          .          
+month4        -INF            8.0000         9.0000          .          
+month5        -INF            7.0000         9.0000          .          
+month6        -INF            5.0000         9.0000          .          
+
+---- EQU FLOWATADEF  Definition of flow at point A
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+month1          .              .              .             2.1000      
+month2          .              .              .             2.0000      
+month3          .              .              .             1.9000      
+month4          .              .              .             2.0000      
+month5          .              .              .             2.2000      
+month6          .              .              .             2.2000      
+
+---- EQU MIN_A_FLOW  Minimum flow constraint at point A
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+month1         1.0000         1.0000        +INF           -2.1000      
+month2         1.0000         1.0000        +INF           -2.0000      
+month3         1.0000         1.0000        +INF           -1.9000      
+month4         1.0000         1.0000        +INF           -2.0000      
+month5         1.0000         1.0000        +INF           -2.2000      
+month6         1.0000         1.0000        +INF           -2.2000      
+
+---- EQU IRRIGSOURCE  Irrigation water is a subset of total release
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+month1        -INF           -1.0000          .              .          
+month2        -INF           -1.0000          .              .          
+month3        -INF           -1.0000          .              .          
+month4        -INF           -1.0000          .              .          
+month5        -INF           -1.0000          .              .          
+month6        -INF           -1.0000          .              .          
+
+---- EQU RESMASSBAL  Reservoir Mass Balance in each month
+
+              LOWER          LEVEL          UPPER         MARGINAL
+
+month1         7.0000         7.0000         7.0000         3.7000      
+month2         2.0000         2.0000         2.0000         3.7000      
+month3         3.0000         3.0000         3.0000         3.7000      
+month4         4.0000         4.0000         4.0000         3.7000      
+month5         3.0000         3.0000         3.0000         3.7000      
+month6         2.0000         2.0000         2.0000         3.7000      
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU FINALSTOR~         5.0000         5.0000        +INF           -3.7000      
+
+  FINALSTORAGECON  Constraint on final storage level
+
+---- VAR X  Decision variables for flows and storage
+
+                         LOWER          LEVEL          UPPER         MARGINAL
+
+storage   .month1          .             6.0000        +INF             .          
+storage   .month2          .             7.0000        +INF             .          
+storage   .month3          .             8.0000        +INF             .          
+storage   .month4          .             8.0000        +INF             .          
+storage   .month5          .             7.0000        +INF             .          
+storage   .month6          .             5.0000        +INF             .          
+turbine   .month1          .             1.0000        +INF             .          
+turbine   .month2          .             1.0000        +INF             .          
+turbine   .month3          .             2.0000        +INF             .          
+turbine   .month4          .             4.0000        +INF             .          
+turbine   .month5          .             4.0000        +INF             .          
+turbine   .month6          .             4.0000        +INF             .          
+spill     .month1          .              .            +INF           -1.6000      
+spill     .month2          .              .            +INF           -1.7000      
+spill     .month3          .              .            +INF           -1.8000      
+spill     .month4          .              .            +INF           -1.7000      
+spill     .month5          .              .            +INF           -1.5000      
+spill     .month6          .              .            +INF           -1.5000      
+irrigation.month1          .              .            +INF           -1.1000      
+irrigation.month2          .              .            +INF           -0.8000      
+irrigation.month3          .             1.0000        +INF             .          
+irrigation.month4          .             3.0000        +INF             .          
+irrigation.month5          .             3.0000        +INF             .          
+irrigation.month6          .             3.0000        +INF             .          
+flow_at_A .month1          .             1.0000        +INF             .          
+flow_at_A .month2          .             1.0000        +INF             .          
+flow_at_A .month3          .             1.0000        +INF             .          
+flow_at_A .month4          .             1.0000        +INF             .          
+flow_at_A .month5          .             1.0000        +INF             .          
+flow_at_A .month6          .             1.0000        +INF             .          
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR VPROFIT           -INF           51.6000        +INF             .          
+
+  VPROFIT  Objective Function value ($)
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/01/25 22:51:16 Page 7
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+E x e c u t i o n
+
+
+----    111 VARIABLE X.L  Decision variables for flows and storage
+
+                month1      month2      month3      month4      month5      month6
+
+storage          6.000       7.000       8.000       8.000       7.000       5.000
+turbine          1.000       1.000       2.000       4.000       4.000       4.000
+irrigation                               1.000       3.000       3.000       3.000
+flow_at_A        1.000       1.000       1.000       1.000       1.000       1.000
+
+
+----    111 VARIABLE VPROFIT.L             =       51.600  Objective Function value ($)
+
+
+EXECUTION TIME       =        0.110 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+
+
+USER: Course License                                 G250902+0003Ac-GEN
+      Utah State University                                     DCE4709
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\Github repo\CEE-6410-Gilbert\HW5\HW5-Reservoir_Problem.gms
+Output     C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\HW5-Reservoir_Problem.lst
