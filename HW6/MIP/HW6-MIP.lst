@@ -1,0 +1,505 @@
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/20/25 22:36:45 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+      CEE 6410 HW6 Integer Problem (Problem 7.4.1)
+       
+      Maximize profit for an irrigation project by selecting
+      an optimal reservoir size (low or high dam) and or a river pump.
+      This is a Mixed Integer Program (MIP).
+       
+       
+      Ty Gilbert
+      A02298741@usu.edu
+      10/20/2025
+  13   
+  14  * 1. DEFINE the SETS
+  15  SETS
+  16     t       seasons of the year /1, 2/
+  17     res_opt reservoir options /high, low/;
+  18   
+  19  * 2. DEFINE input data
+  20  PARAMETERS
+  21     ResCap(res_opt)     Reservoir capacity (ac-ft)
+  22                         /high 700,
+  23                          low  300/
+  24     ResCost(res_opt)    Reservoir capital cost ($ per year)
+  25                         /high 10000,
+  26                          low  6000/
+  27     Q(t)                River inflow to reservoir (ac-ft per season)
+  28                         /1 600,
+  29                          2 200/
+  30     IrrDemand(t)        Irrigation demand (ac-ft per acre)
+  31                         /1 1.0,
+  32                          2 3.0/
+  33     PumpCapCost         Pump capital cost ($ per year) /8000/
+  34     PumpOpCost          Pump operating cost ($ per ac-ft) /20/
+  35     RevenuePerAcre      Revenue ($ per acre) /300/
+  36     DaysPerSeason       Days per 6-month season /182.5/
+  37     PumpDailyCap        Pump daily capacity (ac-ft per day) /2.2/
+  38     GWInflowDaily       Groundwater inflow (ac-ft per day) /2.0/;
+  39   
+  40  * Calculated Parameters
+  41  SCALAR
+  42     PumpSeasonCap     Pump seasonal capacity (ac-ft)
+  43     GWInflowSeason    Seasonal groundwater inflow (ac-ft);
+  44   
+  45  PumpSeasonCap = PumpDailyCap * DaysPerSeason;
+  46  GWInflowSeason = GWInflowDaily * DaysPerSeason;
+  47   
+  48  * 3. DEFINE the variables
+  49  VARIABLES
+  50     I_res(res_opt)   Binary decision to build reservoir (1=yes 0=no)
+  51     I_pump           Binary decision to build pump (1=yes 0=no)
+  52   
+  53     X_res(t)         Water diverted from reservoir (ac-ft per season)
+  54     X_pump(t)        Water pumped from river (ac-ft per season)
+  55     S(t)             Storage at end of season t (ac-ft)
+  56     Release(t)       Release from reservoir in season t (ac-ft)
+  57     Area             Area irrigated (acres)
+  58   
+  59     TPROFIT          Total annual profit ($);
+  60   
+  61  BINARY VARIABLES I_res, I_pump;
+  62  POSITIVE VARIABLES X_res, X_pump, S, Release, Area;
+  63   
+  64  * 4. COMBINE variables and data in equations
+  65  EQUATIONS
+  66     PROFIT           Total Profit ($) and objective function
+  67     MaxOneRes        Can build at most one reservoir (high or low)
+  68     StorageBal(t)    Reservoir storage balance (continuity)
+  69     MaxStorage(t)    Storage cannot exceed built capacity
+  70     ResDiversion(t)  Reservoir diversion limited by available water
+  71     MaxPump(t)       Pumping limited by pump capacity (if built)
+  72     PumpSource(t)    Pumping limited by available river flow
+  73     MeetDemand(t)    Supplied water must meet irrigation demand;
+  74   
+  75  * Objective Function: Maximize (Revenue) - (Reservoir Cost) - (Pump Cost)
+  76  PROFIT..            TPROFIT =E= RevenuePerAcre*Area
+  77                              - SUM(res_opt, ResCost(res_opt)*I_res(res_opt))
+  78                              - PumpCapCost*I_pump
+  79                              - PumpOpCost*SUM(t, X_pump(t));
+  80   
+  81  * Constraint: Can only build one reservoir (or none)
+  82  MaxOneRes..         SUM(res_opt, I_res(res_opt)) =L= 1;
+  83   
+  84  * Constraint: Storage balance. S(t-1) uses t.lag(1) for circular seasons
+  85  StorageBal(t)..     S(t) =E= S(t-1)$(ord(t) > 1) + Q(t) - X_res(t) - Release(t);
+  86   
+  87  * Constraint: Storage is limited by the capacity of the *built* reservoir
+  88  * If no reservoir is built, SUM(res_opt,...) = 0, so S(t) =L= 0.
+  89  MaxStorage(t)..     S(t) =L= SUM(res_opt, ResCap(res_opt)*I_res(res_opt));
+  90   
+  91  * Constraint: Cannot divert more water from reservoir than is available
+  92  ResDiversion(t)..   X_res(t) =L= S(t-1)$(ord(t) > 1) + Q(t);
+  93   
+  94  * Constraint: Pumped volume is zero if pump isn't built (I_pump=0)
+  95  * and limited by seasonal capacity if it is built (I_pump=1)
+  96  MaxPump(t)..        X_pump(t) =L= PumpSeasonCap * I_pump;
+  97   
+  98  * Constraint: Water available to pump = Release from reservoir + Groundwater
+  99  PumpSource(t)..     X_pump(t) =L= Release(t) + GWInflowSeason;
+ 100   
+ 101  * Constraint: Total water supplied must meet the demand of the irrigated area
+ 102  MeetDemand(t)..     X_res(t) + X_pump(t) =G= IrrDemand(t) * Area;
+ 103   
+ 104   
+ 105  * 5. DEFINE the MODEL from the EQUATIONS
+ 106  MODEL IrrigationMIP /ALL/;
+ 107   
+ 108  * 6. Solve the Model as an MIP
+ 109  SOLVE IrrigationMIP USING MIP MAXIMIZING TPROFIT;
+ 110   
+ 111  * 7. Display the results
+ 112  DISPLAY I_res.L, I_pump.L, Area.L, X_res.L, X_pump.L, S.L, Release.L, TPROFIT.L;
+ 113   
+ 114  * Dump all input data and results to a GAMS gdx file
+ 115  Execute_Unload "HW6-MIP.gdx";
+ 116  * Dump the gdx file to an Excel workbook
+ 117  Execute "gdx2xls HW6-MIP.gdx"
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/20/25 22:36:45 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Equation Listing    SOLVE IrrigationMIP Using MIP From line 109
+
+
+---- PROFIT  =E=  Total Profit ($) and objective function
+
+PROFIT..  10000*I_res(high) + 6000*I_res(low) + 8000*I_pump + 20*X_pump(1) + 20*X_pump(2) - 300*Area + TPROFIT =E= 0 ; (LHS = 0)
+     
+
+---- MaxOneRes  =L=  Can build at most one reservoir (high or low)
+
+MaxOneRes..  I_res(high) + I_res(low) =L= 1 ; (LHS = 0)
+     
+
+---- StorageBal  =E=  Reservoir storage balance (continuity)
+
+StorageBal(1)..  X_res(1) + S(1) + Release(1) =E= 600 ; (LHS = 0, INFES = 600 ****)
+     
+StorageBal(2)..  X_res(2) - S(1) + S(2) + Release(2) =E= 200 ; (LHS = 0, INFES = 200 ****)
+     
+
+---- MaxStorage  =L=  Storage cannot exceed built capacity
+
+MaxStorage(1)..  - 700*I_res(high) - 300*I_res(low) + S(1) =L= 0 ; (LHS = 0)
+     
+MaxStorage(2)..  - 700*I_res(high) - 300*I_res(low) + S(2) =L= 0 ; (LHS = 0)
+     
+
+---- ResDiversion  =L=  Reservoir diversion limited by available water
+
+ResDiversion(1)..  X_res(1) =L= 600 ; (LHS = 0)
+     
+ResDiversion(2)..  X_res(2) - S(1) =L= 200 ; (LHS = 0)
+     
+
+---- MaxPump  =L=  Pumping limited by pump capacity (if built)
+
+MaxPump(1)..  - 401.5*I_pump + X_pump(1) =L= 0 ; (LHS = 0)
+     
+MaxPump(2)..  - 401.5*I_pump + X_pump(2) =L= 0 ; (LHS = 0)
+     
+
+---- PumpSource  =L=  Pumping limited by available river flow
+
+PumpSource(1)..  X_pump(1) - Release(1) =L= 365 ; (LHS = 0)
+     
+PumpSource(2)..  X_pump(2) - Release(2) =L= 365 ; (LHS = 0)
+     
+
+---- MeetDemand  =G=  Supplied water must meet irrigation demand
+
+MeetDemand(1)..  X_res(1) + X_pump(1) - Area =G= 0 ; (LHS = 0)
+     
+MeetDemand(2)..  X_res(2) + X_pump(2) - 3*Area =G= 0 ; (LHS = 0)
+     
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/20/25 22:36:45 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Column Listing      SOLVE IrrigationMIP Using MIP From line 109
+
+
+---- I_res  Binary decision to build reservoir (1=yes 0=no)
+
+I_res(high)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+    10000       PROFIT
+        1       MaxOneRes
+     -700       MaxStorage(1)
+     -700       MaxStorage(2)
+
+I_res(low)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+     6000       PROFIT
+        1       MaxOneRes
+     -300       MaxStorage(1)
+     -300       MaxStorage(2)
+
+
+---- I_pump  Binary decision to build pump (1=yes 0=no)
+
+I_pump
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+     8000       PROFIT
+     -401.5     MaxPump(1)
+     -401.5     MaxPump(2)
+
+
+---- X_res  Water diverted from reservoir (ac-ft per season)
+
+X_res(1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       StorageBal(1)
+        1       ResDiversion(1)
+        1       MeetDemand(1)
+
+X_res(2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       StorageBal(2)
+        1       ResDiversion(2)
+        1       MeetDemand(2)
+
+
+---- X_pump  Water pumped from river (ac-ft per season)
+
+X_pump(1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       20       PROFIT
+        1       MaxPump(1)
+        1       PumpSource(1)
+        1       MeetDemand(1)
+
+X_pump(2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       20       PROFIT
+        1       MaxPump(2)
+        1       PumpSource(2)
+        1       MeetDemand(2)
+
+
+---- S  Storage at end of season t (ac-ft)
+
+S(1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       StorageBal(1)
+       -1       StorageBal(2)
+        1       MaxStorage(1)
+       -1       ResDiversion(2)
+
+S(2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       StorageBal(2)
+        1       MaxStorage(2)
+
+
+---- Release  Release from reservoir in season t (ac-ft)
+
+Release(1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       StorageBal(1)
+       -1       PumpSource(1)
+
+Release(2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+        1       StorageBal(2)
+       -1       PumpSource(2)
+
+
+---- Area  Area irrigated (acres)
+
+Area
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+     -300       PROFIT
+       -1       MeetDemand(1)
+       -3       MeetDemand(2)
+
+
+---- TPROFIT  Total annual profit ($)
+
+TPROFIT
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       PROFIT
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/20/25 22:36:45 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Range Statistics    SOLVE IrrigationMIP Using MIP From line 109
+
+
+RANGE STATISTICS (ABSOLUTE NON-ZERO FINITE VALUES)
+
+RHS       [min, max] : [ 1.000E+00, 6.000E+02] - Zero values observed as well
+Bound     [min, max] : [ 1.000E+00, 1.000E+00] - Zero values observed as well
+Matrix    [min, max] : [ 1.000E+00, 1.000E+04]
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/20/25 22:36:45 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE IrrigationMIP Using MIP From line 109
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           8     SINGLE EQUATIONS           14
+BLOCKS OF VARIABLES           8     SINGLE VARIABLES           13
+NON ZERO ELEMENTS            39     DISCRETE VARIABLES          3
+
+
+GENERATION TIME      =        0.016 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/20/25 22:36:45 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE IrrigationMIP Using MIP From line 109
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   IrrigationMIP       OBJECTIVE  TPROFIT
+     TYPE    MIP                 DIRECTION  MAXIMIZE
+     SOLVER  CPLEX               FROM LINE  109
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      1 Optimal
+**** OBJECTIVE VALUE            82150.0000
+
+ RESOURCE USAGE, LIMIT          0.032 10000000000.000
+ ITERATION COUNT, LIMIT         8    2147483647
+*** This solver runs with a community license.
+--- GMO setup time: 0.00s
+--- GMO memory 0.50 Mb (peak 0.50 Mb)
+--- Dictionary memory 0.00 Mb
+--- Cplex 22.1.2.0 link memory 0.00 Mb (peak 0.00 Mb)
+--- Starting Cplex
+
+
+--- MIP status (101): integer optimal solution.
+--- Cplex Time: 0.03sec (det. 0.13 ticks)
+
+--- Returning a primal only solution to GAMS (marginals all set to NA).
+--- Fixing integer variables and solving final LP...
+
+
+--- Fixed MIP status (1): optimal.
+--- Cplex Time: 0.00sec (det. 0.03 ticks)
+
+
+Proven optimal solution
+MIP Solution:        82150.000000    (8 iterations, 0 nodes)
+Final Solve:         82150.000000    (6 iterations)
+
+Best possible:       82150.000000
+Absolute gap:            0.000000
+Relative gap:            0.000000
+
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU PROFIT              .              .              .             1.0000      
+---- EQU MaxOneRes         -INF            1.0000         1.0000          .          
+
+  PROFIT  Total Profit ($) and objective function
+  MaxOneRes  Can build at most one reservoir (high or low)
+
+---- EQU StorageBal  Reservoir storage balance (continuity)
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1       600.0000       600.0000       600.0000        75.0000      
+2       200.0000       200.0000       200.0000        55.0000      
+
+---- EQU MaxStorage  Storage cannot exceed built capacity
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1        -INF         -117.5000          .              .          
+2        -INF         -700.0000          .              .          
+
+---- EQU ResDiversion  Reservoir diversion limited by available water
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1        -INF           17.5000       600.0000          .          
+2        -INF          200.0000       200.0000        20.0000      
+
+---- EQU MaxPump  Pumping limited by pump capacity (if built)
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1        -INF          -36.5000          .              .          
+2        -INF          -36.5000          .              .          
+
+---- EQU PumpSource  Pumping limited by available river flow
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1        -INF          365.0000       365.0000        55.0000      
+2        -INF          365.0000       365.0000        55.0000      
+
+---- EQU MeetDemand  Supplied water must meet irrigation demand
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1          .              .            +INF          -75.0000      
+2          .              .            +INF          -75.0000      
+
+---- VAR I_res  Binary decision to build reservoir (1=yes 0=no)
+
+            LOWER          LEVEL          UPPER         MARGINAL
+
+high          .             1.0000         1.0000    -10000.0000      
+low           .              .             1.0000     -6000.0000      
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR I_pump              .             1.0000         1.0000     -8000.0000      
+
+  I_pump  Binary decision to build pump (1=yes 0=no)
+
+---- VAR X_res  Water diverted from reservoir (ac-ft per season)
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1          .            17.5000        +INF             .          
+2          .           782.5000        +INF             .          
+
+---- VAR X_pump  Water pumped from river (ac-ft per season)
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1          .           365.0000        +INF             .          
+2          .           365.0000        +INF             .          
+
+---- VAR S  Storage at end of season t (ac-ft)
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1          .           582.5000        +INF             .          
+2          .              .            +INF          -55.0000      
+
+---- VAR Release  Release from reservoir in season t (ac-ft)
+
+         LOWER          LEVEL          UPPER         MARGINAL
+
+1          .              .            +INF          -20.0000      
+2          .              .            +INF             .          
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR Area                .           382.5000        +INF             .          
+---- VAR TPROFIT           -INF        82150.0000        +INF             .          
+
+  Area  Area irrigated (acres)
+  TPROFIT  Total annual profit ($)
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 10/20/25 22:36:45 Page 7
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+E x e c u t i o n
+
+
+----    112 VARIABLE I_res.L  Binary decision to build reservoir (1=yes 0=no)
+
+high 1.000
+
+
+----    112 VARIABLE I_pump.L              =        1.000  Binary decision to build pump (1=yes 0=no)
+            VARIABLE Area.L                =      382.500  Area irrigated (acres)
+
+----    112 VARIABLE X_res.L  Water diverted from reservoir (ac-ft per season)
+
+1  17.500,    2 782.500
+
+
+----    112 VARIABLE X_pump.L  Water pumped from river (ac-ft per season)
+
+1 365.000,    2 365.000
+
+
+----    112 VARIABLE S.L  Storage at end of season t (ac-ft)
+
+1 582.500
+
+
+----    112 VARIABLE Release.L  Release from reservoir in season t (ac-ft)
+
+                      ( ALL       0.000 )
+
+
+----    112 VARIABLE TPROFIT.L             =    82150.000  Total annual profit ($)
+
+
+EXECUTION TIME       =        4.969 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+
+
+USER: Course License                                 G250902+0003Ac-GEN
+      Utah State University                                     DCE4709
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW6\Integer\HW6-MIP.gms
+Output     C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW6\Integer\HW6-MIP.lst
