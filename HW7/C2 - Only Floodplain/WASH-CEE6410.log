@@ -1,0 +1,125 @@
+
+--- Job WASH-CEE6410.gms Start 10/30/25 23:00:23 51.1.0 2d039df5 WEX-WEI x86 64bit/MS Windows
+--- Applying:
+    C:\GAMS\51\gmsprmNT.txt
+    C:\Users\Skool\OneDrive - USU\Documents\GAMS\gamsconfig.yaml
+--- GAMS Parameters defined
+    Input "C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH-CEE6410.gms"
+    PageSize 0
+    ScrDir "C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\225b\"
+    SysDir C:\GAMS\51\
+    LogOption 3
+    AppendLog 1
+    ErrMsg 1
+    ErrorLog 99
+    IDE 1
+    LstTitleLeftAligned 1
+Licensee: Course License                                 G250902+0003Ac-GEN
+          Utah State University                                     DCE4709
+          225b\gamslice.dat
+          node:22724503 mem:16 cores:4 ipport:65246 uses:0@0 v:2           
+          Course license for use within the course and related course work
+          The expiration date of time-limited license is Dec 31, 2025
+System information: 4 physical cores and 16 Gb physical memory detected
+GAMS 51.1.0   Copyright (C) 1987-2025 GAMS Development. All rights reserved
+--- Starting compilation
+--- WASH-CEE6410.gms(216) 2 Mb
+--- call GDXXRW.EXE input=WASH_1yr_InputData.xlsx output=WASH-Data.gdx  Set=t rng=Month!A1:A12 Rdim=1  Set=s rng=SubInd!A1:A100 Rdim=1 set=y rng=FishSpp!A1:A10 Rdim=1 set=n rng=VegSpp!A1:A10 Rdim=1 Set=j rng=Nodes!A1:A100 Rdim=1 Set=wt rng=Wetlands!A1:A100 Rdim=1 Set=dem rng=Demand!A1:A100 Rdim=1  set=NodeNotDemandSite  rng=NodesNotDemand!A1:A100 Rdim=1 set=NodeNotHeadwater  rng=NodeNotHeadwater!A1:A100 Rdim=1  Set=v rng=Reservoirs!A1:A100 Rdim=1 Set=rsi_indx rng=rsiIndex!A1:A10 Rdim=1  Set=fci_indx rng=fciIndex!A1:A10 Rdim=1 par=LinkID  rng=LinkName!A1 Rdim=2   par=rsi_par rng=rsiEQ!A1 Rdim=3 Cdim=1  par=fci_par rng=fciEQ!A1 Rdim=3 Cdim=1 par=envSiteExist rng=EnvSite!A1 Rdim=1 Cdim=1  par=DiversionExist rng=Diversions!A1 Rdim=1 Cdim=1   par=returnFlowExist rng=ReturnFlow!A1 Rdim=1 Cdim=1 par=WetlandsExist rng=WetlandsSites!A1 Rdim=1 Cdim=1 par=LinktoReservoir rng=LinktoReservoir!A1 Rdim=1 Cdim=1 par=LinkOutReservoir rng=LinkOutReservoir!A1 Rdim=1 Cdim=1   Set=RA_par_indx rng=R_indx!A1 Rdim=1  Set=sf_par_indx rng=sf_indx!A1:A10 Rdim=1  Set=wf_par_indx rng=wf_indx!A1:A10 Rdim=1 Set=wsi_par_indx rng=wsi_indx!A1:A10 Rdim=1 par=reachGain rng=HeadFlow!A1 Rdim=1 Cdim=1   par=wght rng=weights!A1 Cdim=1 Rdim=3  par=aw rng=AW!A1 Rdim=3  par=lss rng=lss!A1 Rdim=2 Cdim=1 par=evap rng=evap!A1 Rdim=1 Cdim=1  par=linkEvap  rng=linkEvap!A1  Rdim=2  Cdim=1  par=RA_par rng=ResElevVol!A1 Rdim=1 Cdim=1  par=Qsim  rng=QSim!A1 Rdim=2 Cdim=1   par=Qmin  rng=Qmin!A1 Rdim=2 Cdim=1  par=Qmax  rng=Qmax!A1 Rdim=2 Cdim=1  par=Cons rng=Cons!A1 Rdim=1 Cdim=1 par=lng rng=Length!A1 Rdim=2   par=minstor rng=inactive!A1 Rdim=1  par=maxstor rng=capacity!A1 Rdim=1  par=dReqBase rng=demandReq!A1 Rdim=1 Cdim=1 par=dCap rng=divCap!A1 Rdim=2  par=instreamReq   rng=Instream!A1 Rdim=2 Cdim=1  par=cst rng=UnitCost!A1 Rdim=1  par=Linkexist rng=Connect!A1 Rdim=1 Cdim=1  par=sf_par rng=StageFlow!A1 Rdim=2 Cdim=1 par=wf_par rng=WidthFlow!A1 Rdim=2 Cdim=1   par=wsi_par rng=wp!A1 Rdim=3 Cdim=1  par=b rng=Budget!A1 Rdim=0   par=InitSTOR rng=InStor!A1 Rdim=1   par=InitD rng=InitD!A1 Rdim=2  par=InitC rng=InitC!A1 Rdim=2  par=CMax   rng=CMax!A1 Rdim=2   par=SimLink  rng=SimLinks!A1 Rdim=2  par=LinkExistSim   rng=Connect_sim!A1 Cdim=1  Rdim=1  set= MassBalanceNodes rng=MassBalanceNodes!A1  Rdim=1  Set=run  rng=Runs!A1 Rdim=1   par=DValue  rng=DemandRuns!A1  Rdim=1    set=Qrun  rng=Qrun!A1  Rdim=1   par=QLoop   rng=QRunValues!A1  Rdim=1  par=g rng=NaturalGrowth!A1  Rdim=3  Cdim=1   par=maxrv  rng=Revegetate!A1 Rdim=3 Cdim=1   par=minrv
+
+GDXXRW           51.1.0 2d039df5 Sep 13, 2025          WEI x86 64bit/MS Window
+Input file : C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH_1yr_InputData.xlsx
+Output file: C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH-Data.gdx
+Total time = 6172 Ms
+--- WASH-CEE6410.gms(234) 2 Mb
+--- GDXin=C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH-Data.gdx
+--- GDX File ($gdxIn) C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH-Data.gdx
+--- WASH-CEE6410.gms(522) 3 Mb
+--- $echo File C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\baron.opt
+--- WASH-CEE6410.gms(1175) 3 Mb
+--- Starting execution: elapsed 0:00:06.475
+--- WASH-CEE6410.gms(517) 4 Mb
+--- Generating NLP model WASH
+--- WASH-CEE6410.gms(547) 7 Mb
+---   4,380 rows  3,805 columns  8,502 non-zeroes
+---   3,400 nl-code  814 nl-non-zeroes
+--- Range statistics (absolute non-zero finite values)
+--- RHS       [min, max] : [ 1.000E-03, 1.000E+05] - Zero values observed as well
+--- Bound     [min, max] : [ 2.234E-01, 2.451E+02] - Zero values observed as well
+--- Matrix    [min, max] : [ 3.459E-11, 1.000E+02] - Zero values observed as well
+--- WASH-CEE6410.gms(547) 5 Mb
+--- Executing CONOPT (Solvelink=2): elapsed 0:00:06.624
+
+CONOPT 4         51.1.0 2d039df5 Sep 13, 2025          WEI x86 64bit/MS Window
+
+ 
+ 
+    C O N O P T   version 4.38.1
+    Copyright (C) GAMS Software GmbH
+                  GAMS Development Corporation
+ 
+    Will use up to 4 threads.
+ 
+ 
+    The user model has 4380 constraints and 3805 variables
+    with 8502 Jacobian elements, 814 of which are nonlinear.
+    The Hessian of the Lagrangian has 190 elements on the diagonal,
+    312 elements below the diagonal, and 814 nonlinear variables.
+ 
+    Iter Phase   Ninf   Infeasibility   RGmax      NSB   Step  InItr MX OK
+       0   0          1.0115586113E+03 (Input point)
+ 
+    The pre-triangular part of the model has 2467 constraints and 1493 variables.
+    The post-triangular part of the model has 1492 constraints and variables.
+ 
+    Preprocessed model has 421 constraints and 820 variables
+    with 1289 Jacobian elements, 14 of which are nonlinear.
+ 
+    Iter Phase   Ninf   Infeasibility   RGmax      NSB   Step  InItr MX OK
+                      2.9930449856E+02 (Full preprocessed model)
+                      3.1106003359E+01 (After scaling)
+                      1.1321030732E+01 (After adjusting individual variables)
+       1   0          8.4301970663E+00                 1.0E+00     3 T  T
+       2   0          8.4301139865E+00                 1.0E+00     1 T  T
+       3   1       8  2.0423040855E+00 1.0E+00      28 1.0E+00    25 T  T
+       4   1       2  1.1372746375E-01 1.0E+00      35 1.0E+00    27 T  T
+ 
+ ** Feasible solution. Value of objective =    0.00000000000
+ 
+    Iter Phase   Ninf     Objective     RGmax      NSB   Step  InItr MX OK
+       5   3          2.4458956126E+00 3.1E-01     118 1.0E+00     1 T  T
+       6   3          2.6306092782E+00 3.1E-01      82 1.0E+00    35 T  T
+       7   3          3.3421371931E+00 1.7E-01      57 1.0E+00    49 T  T
+       8   3          3.3766827806E+00 8.1E-04      16 1.0E+00    17 T  T
+       9   3          3.3767620486E+00 5.4E-04       1 1.0E+00     1 T  T
+      10   4          3.3767620486E+00 0.0E+00     310 0.0E+00       T  T
+      11   4          3.3767620486E+00 5.6E-08     310 0.0E+00       T  T
+      12   4          3.3767620486E+00 5.6E-08     310 0.0E+00       T  T
+      13   4          3.3767620486E+00 5.6E-08     310 0.0E+00       T  T
+      14   4          3.3767620486E+00 5.6E-08     310 0.0E+00       F  T
+ 
+    Iter Phase   Ninf     Objective     RGmax      NSB   Step  InItr MX OK
+      15   4          3.3767620486E+00 0.0E+00     310 0.0E+00       F  T
+      16   4          3.3767620486E+00 5.6E-08     310
+ 
+ ** Optimal solution. Reduced gradient less than tolerance.
+ 
+--- Reading solution for model WASH
+--- Executing after solve: elapsed 0:00:06.893
+--- WASH-CEE6410.gms(576) 5 Mb
+--- GDX File (execute_unload) C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH-solution.gdx
+--- WASH-CEE6410.gms(579) 5 Mb
+
+GDXXRW           51.1.0 2d039df5 Sep 13, 2025          WEI x86 64bit/MS Window
+Input file : C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH-solution.gdx
+Output file: C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\gms files\HW7\WASH-solution.xlsx
+Writing to an .XLSX file while there is also a file with the same name with an .XLS file extension
+Use the option "Output" to override the default output file
+Total time = 5562 Ms
+*** Status: Normal completion
+--- Job WASH-CEE6410.gms Stop 10/30/25 23:00:36 elapsed 0:00:12.639
+Cannot delete directory: 225b
+Cannot delete directory: 225b
+Cannot delete directory: 225b
+Cannot delete directory: 225b
+Cannot delete directory: 225b
+*** Error: Cannot delete process directory: 225b
