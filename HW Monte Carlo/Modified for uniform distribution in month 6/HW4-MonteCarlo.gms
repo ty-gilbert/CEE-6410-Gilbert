@@ -41,10 +41,12 @@ PART I sets ups the original deterministic linear programming problem with the
 PART II generates the Monte Carlo samples and solves the model 250 times for each set of
      sampled values
 
+*modified to include a uniform distribution between 1.7 and 2.3 in month 6 for hydropower benefits
+
 Programmed by David E. Rosenberg
-October 26, 2015
-Updated October 23, 2018
-david.rosenberg@usu.edu
+Modified by Ty Gilbert
+November 20, 2025
+A02298741@usu.edu
 $offtext
 
 *****************************************
