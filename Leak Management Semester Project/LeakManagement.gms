@@ -27,8 +27,8 @@ $Offtext
 
 Sets
     i   Pipe segments / 
-        Trans_Dewitt_01   "Aging Cast Iron Transmission Main (High Break Rate)"
-        Trans_Dewitt_02   "Aging Cast Iron Transmission Main"
+        Main_Dewitt_01   "Aging Cast Iron Transmission Main (High Break Rate)"
+        Main_Dewitt_02   "Aging Cast Iron Transmission Main"
         Dist_CastleH_01   "Residential PVC (Low Break Rate)"
         Dist_CastleH_02   "Residential PVC"
         Dist_CastleH_03   "Residential PVC"
@@ -75,14 +75,14 @@ Parameters
 * -- Transmission Mains (Aging Cast Iron) --
 * Modeled as high consequence (large volume loss) and high repair cost.
 * Leak Volume: Assume 100 gpm leak = ~49,000 m3/quarter
-L_rate('Trans_Dewitt_01') = 49000;
-L_rate('Trans_Dewitt_02') = 49000;
+L_rate('Main_Dewitt_01') = 49000;
+L_rate('Main_Dewitt_02') = 49000;
 * Inspection cost (Acoustic methods for large diameter)
-C_inspect('Trans_Dewitt_01') = 1500;
-C_inspect('Trans_Dewitt_02') = 1500;
+C_inspect('Main_Dewitt_01') = 1500;
+C_inspect('Main_Dewitt_02') = 1500;
 * Repair Cost (Large diameter, deep bury)
-C_repair('Trans_Dewitt_01')  = 25000;
-C_repair('Trans_Dewitt_02')  = 25000;
+C_repair('Main_Dewitt_01')  = 25000;
+C_repair('Main_Dewitt_02')  = 25000;
 
 * -- Distribution Lines (Residential PVC/Mixed) --
 * Modeled as lower consequence (smaller volume) and lower repair cost.

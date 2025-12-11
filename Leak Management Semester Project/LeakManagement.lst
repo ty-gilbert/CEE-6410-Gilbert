@@ -1,4 +1,4 @@
-GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 1
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:43:36 Page 1
 Optimizing Leak Management Strategies for Logan Water Networks
 C o m p i l a t i o n
 
@@ -29,8 +29,8 @@ C o m p i l a t i o n
   27   
   28  Sets
   29      i   Pipe segments /
-  30          Trans_Dewitt_01   "Aging Cast Iron Transmission Main (High Break Rate)"
-  31          Trans_Dewitt_02   "Aging Cast Iron Transmission Main"
+  30          Main_Dewitt_01   "Aging Cast Iron Transmission Main (High Break Rate)"
+  31          Main_Dewitt_02   "Aging Cast Iron Transmission Main"
   32          Dist_CastleH_01   "Residential PVC (Low Break Rate)"
   33          Dist_CastleH_02   "Residential PVC"
   34          Dist_CastleH_03   "Residential PVC"
@@ -77,14 +77,14 @@ C o m p i l a t i o n
   75  * -- Transmission Mains (Aging Cast Iron) --
   76  * Modeled as high consequence (large volume loss) and high repair cost.
   77  * Leak Volume: Assume 100 gpm leak = ~49,000 m3/quarter
-  78  L_rate('Trans_Dewitt_01') = 49000;
-  79  L_rate('Trans_Dewitt_02') = 49000;
+  78  L_rate('Main_Dewitt_01') = 49000;
+  79  L_rate('Main_Dewitt_02') = 49000;
   80  * Inspection cost (Acoustic methods for large diameter)
-  81  C_inspect('Trans_Dewitt_01') = 1500;
-  82  C_inspect('Trans_Dewitt_02') = 1500;
+  81  C_inspect('Main_Dewitt_01') = 1500;
+  82  C_inspect('Main_Dewitt_02') = 1500;
   83  * Repair Cost (Large diameter, deep bury)
-  84  C_repair('Trans_Dewitt_01')  = 25000;
-  85  C_repair('Trans_Dewitt_02')  = 25000;
+  84  C_repair('Main_Dewitt_01')  = 25000;
+  85  C_repair('Main_Dewitt_02')  = 25000;
   86   
   87  * -- Distribution Lines (Residential PVC/Mixed) --
   88  * Modeled as lower consequence (smaller volume) and lower repair cost.
@@ -221,71 +221,71 @@ C o m p i l a t i o n
 
 
 COMPILATION TIME     =        0.000 SECONDS      3 MB  51.1.0 2d039df5 WEX-WEI
-GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 2
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:43:36 Page 2
 Optimizing Leak Management Strategies for Logan Water Networks
 Equation Listing    SOLVE LoganLeakModel Using MIP From line 202
 
 
 ---- ObjFunction  =E=  Minimize total cost
 
-ObjFunction..  Z_obj - 0.82*W_lost(Trans_Dewitt_01,Q1) - 0.82*W_lost(Trans_Dewitt_01,Q2) - 0.82*W_lost(Trans_Dewitt_01,Q3) - 0.82*W_lost(Trans_Dewitt_01,Q4) - 0.82*W_lost(Trans_Dewitt_02,Q1) - 0.82*W_lost(Trans_Dewitt_02,Q2) - 0.82*W_lost(Trans_Dewitt_02,Q3) - 0.82*W_lost(Trans_Dewitt_02,Q4) - 0.82*W_lost(Dist_CastleH_01,Q1) - 0.82*W_lost(Dist_CastleH_01,Q2) - 0.82*W_lost(Dist_CastleH_01,Q3) - 0.82*W_lost(Dist_CastleH_01,Q4) - 0.82*W_lost(Dist_CastleH_02,Q1) - 0.82*W_lost(Dist_CastleH_02,Q2) - 0.82*W_lost(Dist_CastleH_02,Q3) - 0.82*W_lost(Dist_CastleH_02,Q4) - 0.82*W_lost(Dist_CastleH_03,Q1) - 0.82*W_lost(Dist_CastleH_03,Q2) - 0.82*W_lost(Dist_CastleH_03,Q3) - 0.82*W_lost(Dist_CastleH_03,Q4) - 0.82*W_lost(Dist_Upper_01,Q1) - 0.82*W_lost(Dist_Upper_01,Q2) - 0.82*W_lost(Dist_Upper_01,Q3) - 0.82*W_lost(Dist_Upper_01,Q4) - 0.82*W_lost(Dist_Upper_02,Q1) - 0.82*W_lost(Dist_Upper_02,Q2) - 0.82*W_lost(Dist_Upper_02,Q3) - 0.82*W_lost(Dist_Upper_02,Q4) - 1500*X(Trans_Dewitt_01,Q1) - 1500*X(Trans_Dewitt_01,Q2) - 1500*X(Trans_Dewitt_01,Q3) - 1500*X(Trans_Dewitt_01,Q4) - 1500*X(Trans_Dewitt_02,Q1) - 1500*X(Trans_Dewitt_02,Q2) - 1500*X(Trans_Dewitt_02,Q3) - 1500*X(Trans_Dewitt_02,Q4) - 300*X(Dist_CastleH_01,Q1) - 300*X(Dist_CastleH_01,Q2) - 300*X(Dist_CastleH_01,Q3) - 300*X(Dist_CastleH_01,Q4) - 300*X(Dist_CastleH_02,Q1) - 300*X(Dist_CastleH_02,Q2) - 300*X(Dist_CastleH_02,Q3) - 300*X(Dist_CastleH_02,Q4) - 300*X(Dist_CastleH_03,Q1) - 300*X(Dist_CastleH_03,Q2) - 300*X(Dist_CastleH_03,Q3) - 300*X(Dist_CastleH_03,Q4) - 300*X(Dist_Upper_01,Q1) - 300*X(Dist_Upper_01,Q2) - 300*X(Dist_Upper_01,Q3) - 300*X(Dist_Upper_01,Q4) - 300*X(Dist_Upper_02,Q1) - 300*X(Dist_Upper_02,Q2) - 300*X(Dist_Upper_02,Q3) - 300*X(Dist_Upper_02,Q4) - 25000*Y(Trans_Dewitt_01,Q1) - 25000*Y(Trans_Dewitt_01,Q2) - 25000*Y(Trans_Dewitt_01,Q3) - 25000*Y(Trans_Dewitt_01,Q4) - 25000*Y(Trans_Dewitt_02,Q1) - 25000*Y(Trans_Dewitt_02,Q2) - 25000*Y(Trans_Dewitt_02,Q3) - 25000*Y(Trans_Dewitt_02,Q4) - 8000*Y(Dist_CastleH_01,Q1) - 8000*Y(Dist_CastleH_01,Q2) - 8000*Y(Dist_CastleH_01,Q3) - 8000*Y(Dist_CastleH_01,Q4) - 8000*Y(Dist_CastleH_02,Q1) - 8000*Y(Dist_CastleH_02,Q2) - 8000*Y(Dist_CastleH_02,Q3) - 8000*Y(Dist_CastleH_02,Q4) - 8000*Y(Dist_CastleH_03,Q1) - 8000*Y(Dist_CastleH_03,Q2) - 8000*Y(Dist_CastleH_03,Q3) - 8000*Y(Dist_CastleH_03,Q4) - 8000*Y(Dist_Upper_01,Q1) - 8000*Y(Dist_Upper_01,Q2) - 8000*Y(Dist_Upper_01,Q3) - 8000*Y(Dist_Upper_01,Q4) - 8000*Y(Dist_Upper_02,Q1) - 8000*Y(Dist_Upper_02,Q2) - 8000*Y(Dist_Upper_02,Q3) - 8000*Y(Dist_Upper_02,Q4) =E= 0 ; (LHS = 0)
+ObjFunction..  Z_obj - 0.82*W_lost(Main_Dewitt_01,Q1) - 0.82*W_lost(Main_Dewitt_01,Q2) - 0.82*W_lost(Main_Dewitt_01,Q3) - 0.82*W_lost(Main_Dewitt_01,Q4) - 0.82*W_lost(Main_Dewitt_02,Q1) - 0.82*W_lost(Main_Dewitt_02,Q2) - 0.82*W_lost(Main_Dewitt_02,Q3) - 0.82*W_lost(Main_Dewitt_02,Q4) - 0.82*W_lost(Dist_CastleH_01,Q1) - 0.82*W_lost(Dist_CastleH_01,Q2) - 0.82*W_lost(Dist_CastleH_01,Q3) - 0.82*W_lost(Dist_CastleH_01,Q4) - 0.82*W_lost(Dist_CastleH_02,Q1) - 0.82*W_lost(Dist_CastleH_02,Q2) - 0.82*W_lost(Dist_CastleH_02,Q3) - 0.82*W_lost(Dist_CastleH_02,Q4) - 0.82*W_lost(Dist_CastleH_03,Q1) - 0.82*W_lost(Dist_CastleH_03,Q2) - 0.82*W_lost(Dist_CastleH_03,Q3) - 0.82*W_lost(Dist_CastleH_03,Q4) - 0.82*W_lost(Dist_Upper_01,Q1) - 0.82*W_lost(Dist_Upper_01,Q2) - 0.82*W_lost(Dist_Upper_01,Q3) - 0.82*W_lost(Dist_Upper_01,Q4) - 0.82*W_lost(Dist_Upper_02,Q1) - 0.82*W_lost(Dist_Upper_02,Q2) - 0.82*W_lost(Dist_Upper_02,Q3) - 0.82*W_lost(Dist_Upper_02,Q4) - 1500*X(Main_Dewitt_01,Q1) - 1500*X(Main_Dewitt_01,Q2) - 1500*X(Main_Dewitt_01,Q3) - 1500*X(Main_Dewitt_01,Q4) - 1500*X(Main_Dewitt_02,Q1) - 1500*X(Main_Dewitt_02,Q2) - 1500*X(Main_Dewitt_02,Q3) - 1500*X(Main_Dewitt_02,Q4) - 300*X(Dist_CastleH_01,Q1) - 300*X(Dist_CastleH_01,Q2) - 300*X(Dist_CastleH_01,Q3) - 300*X(Dist_CastleH_01,Q4) - 300*X(Dist_CastleH_02,Q1) - 300*X(Dist_CastleH_02,Q2) - 300*X(Dist_CastleH_02,Q3) - 300*X(Dist_CastleH_02,Q4) - 300*X(Dist_CastleH_03,Q1) - 300*X(Dist_CastleH_03,Q2) - 300*X(Dist_CastleH_03,Q3) - 300*X(Dist_CastleH_03,Q4) - 300*X(Dist_Upper_01,Q1) - 300*X(Dist_Upper_01,Q2) - 300*X(Dist_Upper_01,Q3) - 300*X(Dist_Upper_01,Q4) - 300*X(Dist_Upper_02,Q1) - 300*X(Dist_Upper_02,Q2) - 300*X(Dist_Upper_02,Q3) - 300*X(Dist_Upper_02,Q4) - 25000*Y(Main_Dewitt_01,Q1) - 25000*Y(Main_Dewitt_01,Q2) - 25000*Y(Main_Dewitt_01,Q3) - 25000*Y(Main_Dewitt_01,Q4) - 25000*Y(Main_Dewitt_02,Q1) - 25000*Y(Main_Dewitt_02,Q2) - 25000*Y(Main_Dewitt_02,Q3) - 25000*Y(Main_Dewitt_02,Q4) - 8000*Y(Dist_CastleH_01,Q1) - 8000*Y(Dist_CastleH_01,Q2) - 8000*Y(Dist_CastleH_01,Q3) - 8000*Y(Dist_CastleH_01,Q4) - 8000*Y(Dist_CastleH_02,Q1) - 8000*Y(Dist_CastleH_02,Q2) - 8000*Y(Dist_CastleH_02,Q3) - 8000*Y(Dist_CastleH_02,Q4) - 8000*Y(Dist_CastleH_03,Q1) - 8000*Y(Dist_CastleH_03,Q2) - 8000*Y(Dist_CastleH_03,Q3) - 8000*Y(Dist_CastleH_03,Q4) - 8000*Y(Dist_Upper_01,Q1) - 8000*Y(Dist_Upper_01,Q2) - 8000*Y(Dist_Upper_01,Q3) - 8000*Y(Dist_Upper_01,Q4) - 8000*Y(Dist_Upper_02,Q1) - 8000*Y(Dist_Upper_02,Q2) - 8000*Y(Dist_Upper_02,Q3) - 8000*Y(Dist_Upper_02,Q4) =E= 0 ; (LHS = 0)
      
 
 ---- BudgetConst  =L=  Total spending cannot exceed quarterly budget
 
-BudgetConst(Q1)..  1500*X(Trans_Dewitt_01,Q1) + 1500*X(Trans_Dewitt_02,Q1) + 300*X(Dist_CastleH_01,Q1) + 300*X(Dist_CastleH_02,Q1) + 300*X(Dist_CastleH_03,Q1) + 300*X(Dist_Upper_01,Q1) + 300*X(Dist_Upper_02,Q1) + 25000*Y(Trans_Dewitt_01,Q1) + 25000*Y(Trans_Dewitt_02,Q1) + 8000*Y(Dist_CastleH_01,Q1) + 8000*Y(Dist_CastleH_02,Q1) + 8000*Y(Dist_CastleH_03,Q1) + 8000*Y(Dist_Upper_01,Q1) + 8000*Y(Dist_Upper_02,Q1) =L= 15000 ; (LHS = 0)
+BudgetConst(Q1)..  1500*X(Main_Dewitt_01,Q1) + 1500*X(Main_Dewitt_02,Q1) + 300*X(Dist_CastleH_01,Q1) + 300*X(Dist_CastleH_02,Q1) + 300*X(Dist_CastleH_03,Q1) + 300*X(Dist_Upper_01,Q1) + 300*X(Dist_Upper_02,Q1) + 25000*Y(Main_Dewitt_01,Q1) + 25000*Y(Main_Dewitt_02,Q1) + 8000*Y(Dist_CastleH_01,Q1) + 8000*Y(Dist_CastleH_02,Q1) + 8000*Y(Dist_CastleH_03,Q1) + 8000*Y(Dist_Upper_01,Q1) + 8000*Y(Dist_Upper_02,Q1) =L= 15000 ; (LHS = 0)
      
-BudgetConst(Q2)..  1500*X(Trans_Dewitt_01,Q2) + 1500*X(Trans_Dewitt_02,Q2) + 300*X(Dist_CastleH_01,Q2) + 300*X(Dist_CastleH_02,Q2) + 300*X(Dist_CastleH_03,Q2) + 300*X(Dist_Upper_01,Q2) + 300*X(Dist_Upper_02,Q2) + 25000*Y(Trans_Dewitt_01,Q2) + 25000*Y(Trans_Dewitt_02,Q2) + 8000*Y(Dist_CastleH_01,Q2) + 8000*Y(Dist_CastleH_02,Q2) + 8000*Y(Dist_CastleH_03,Q2) + 8000*Y(Dist_Upper_01,Q2) + 8000*Y(Dist_Upper_02,Q2) =L= 45000 ; (LHS = 0)
+BudgetConst(Q2)..  1500*X(Main_Dewitt_01,Q2) + 1500*X(Main_Dewitt_02,Q2) + 300*X(Dist_CastleH_01,Q2) + 300*X(Dist_CastleH_02,Q2) + 300*X(Dist_CastleH_03,Q2) + 300*X(Dist_Upper_01,Q2) + 300*X(Dist_Upper_02,Q2) + 25000*Y(Main_Dewitt_01,Q2) + 25000*Y(Main_Dewitt_02,Q2) + 8000*Y(Dist_CastleH_01,Q2) + 8000*Y(Dist_CastleH_02,Q2) + 8000*Y(Dist_CastleH_03,Q2) + 8000*Y(Dist_Upper_01,Q2) + 8000*Y(Dist_Upper_02,Q2) =L= 45000 ; (LHS = 0)
      
-BudgetConst(Q3)..  1500*X(Trans_Dewitt_01,Q3) + 1500*X(Trans_Dewitt_02,Q3) + 300*X(Dist_CastleH_01,Q3) + 300*X(Dist_CastleH_02,Q3) + 300*X(Dist_CastleH_03,Q3) + 300*X(Dist_Upper_01,Q3) + 300*X(Dist_Upper_02,Q3) + 25000*Y(Trans_Dewitt_01,Q3) + 25000*Y(Trans_Dewitt_02,Q3) + 8000*Y(Dist_CastleH_01,Q3) + 8000*Y(Dist_CastleH_02,Q3) + 8000*Y(Dist_CastleH_03,Q3) + 8000*Y(Dist_Upper_01,Q3) + 8000*Y(Dist_Upper_02,Q3) =L= 45000 ; (LHS = 0)
+BudgetConst(Q3)..  1500*X(Main_Dewitt_01,Q3) + 1500*X(Main_Dewitt_02,Q3) + 300*X(Dist_CastleH_01,Q3) + 300*X(Dist_CastleH_02,Q3) + 300*X(Dist_CastleH_03,Q3) + 300*X(Dist_Upper_01,Q3) + 300*X(Dist_Upper_02,Q3) + 25000*Y(Main_Dewitt_01,Q3) + 25000*Y(Main_Dewitt_02,Q3) + 8000*Y(Dist_CastleH_01,Q3) + 8000*Y(Dist_CastleH_02,Q3) + 8000*Y(Dist_CastleH_03,Q3) + 8000*Y(Dist_Upper_01,Q3) + 8000*Y(Dist_Upper_02,Q3) =L= 45000 ; (LHS = 0)
      
 REMAINING ENTRY SKIPPED
 
 
 ---- InspectReq  =L=  Cannot repair unless inspected
 
-InspectReq(Trans_Dewitt_01,Q1)..  - X(Trans_Dewitt_01,Q1) + Y(Trans_Dewitt_01,Q1) =L= 0 ; (LHS = 0)
+InspectReq(Main_Dewitt_01,Q1)..  - X(Main_Dewitt_01,Q1) + Y(Main_Dewitt_01,Q1) =L= 0 ; (LHS = 0)
      
-InspectReq(Trans_Dewitt_01,Q2)..  - X(Trans_Dewitt_01,Q2) + Y(Trans_Dewitt_01,Q2) =L= 0 ; (LHS = 0)
+InspectReq(Main_Dewitt_01,Q2)..  - X(Main_Dewitt_01,Q2) + Y(Main_Dewitt_01,Q2) =L= 0 ; (LHS = 0)
      
-InspectReq(Trans_Dewitt_01,Q3)..  - X(Trans_Dewitt_01,Q3) + Y(Trans_Dewitt_01,Q3) =L= 0 ; (LHS = 0)
+InspectReq(Main_Dewitt_01,Q3)..  - X(Main_Dewitt_01,Q3) + Y(Main_Dewitt_01,Q3) =L= 0 ; (LHS = 0)
      
 REMAINING 25 ENTRIES SKIPPED
 
 
 ---- DeliveryConst  =G=  Ensure supply meets demand after losses
 
-DeliveryConst(Q1)..  - W_lost(Trans_Dewitt_01,Q1) - W_lost(Trans_Dewitt_02,Q1) - W_lost(Dist_CastleH_01,Q1) - W_lost(Dist_CastleH_02,Q1) - W_lost(Dist_CastleH_03,Q1) - W_lost(Dist_Upper_01,Q1) - W_lost(Dist_Upper_02,Q1) =G= -6400000 ; (LHS = 0)
+DeliveryConst(Q1)..  - W_lost(Main_Dewitt_01,Q1) - W_lost(Main_Dewitt_02,Q1) - W_lost(Dist_CastleH_01,Q1) - W_lost(Dist_CastleH_02,Q1) - W_lost(Dist_CastleH_03,Q1) - W_lost(Dist_Upper_01,Q1) - W_lost(Dist_Upper_02,Q1) =G= -6400000 ; (LHS = 0)
      
-DeliveryConst(Q2)..  - W_lost(Trans_Dewitt_01,Q2) - W_lost(Trans_Dewitt_02,Q2) - W_lost(Dist_CastleH_01,Q2) - W_lost(Dist_CastleH_02,Q2) - W_lost(Dist_CastleH_03,Q2) - W_lost(Dist_Upper_01,Q2) - W_lost(Dist_Upper_02,Q2) =G= -4150000 ; (LHS = 0)
+DeliveryConst(Q2)..  - W_lost(Main_Dewitt_01,Q2) - W_lost(Main_Dewitt_02,Q2) - W_lost(Dist_CastleH_01,Q2) - W_lost(Dist_CastleH_02,Q2) - W_lost(Dist_CastleH_03,Q2) - W_lost(Dist_Upper_01,Q2) - W_lost(Dist_Upper_02,Q2) =G= -4150000 ; (LHS = 0)
      
-DeliveryConst(Q3)..  - W_lost(Trans_Dewitt_01,Q3) - W_lost(Trans_Dewitt_02,Q3) - W_lost(Dist_CastleH_01,Q3) - W_lost(Dist_CastleH_02,Q3) - W_lost(Dist_CastleH_03,Q3) - W_lost(Dist_Upper_01,Q3) - W_lost(Dist_Upper_02,Q3) =G= -4150000 ; (LHS = 0)
+DeliveryConst(Q3)..  - W_lost(Main_Dewitt_01,Q3) - W_lost(Main_Dewitt_02,Q3) - W_lost(Dist_CastleH_01,Q3) - W_lost(Dist_CastleH_02,Q3) - W_lost(Dist_CastleH_03,Q3) - W_lost(Dist_Upper_01,Q3) - W_lost(Dist_Upper_02,Q3) =G= -4150000 ; (LHS = 0)
      
 REMAINING ENTRY SKIPPED
 
 
 ---- LeakContinuity  =E=  Calculate water loss based on repair history
 
-LeakContinuity(Trans_Dewitt_01,Q1)..  W_lost(Trans_Dewitt_01,Q1) + 49000*Y(Trans_Dewitt_01,Q1) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
+LeakContinuity(Main_Dewitt_01,Q1)..  W_lost(Main_Dewitt_01,Q1) + 49000*Y(Main_Dewitt_01,Q1) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
      
-LeakContinuity(Trans_Dewitt_01,Q2)..  W_lost(Trans_Dewitt_01,Q2) + 49000*Y(Trans_Dewitt_01,Q1) + 49000*Y(Trans_Dewitt_01,Q2) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
+LeakContinuity(Main_Dewitt_01,Q2)..  W_lost(Main_Dewitt_01,Q2) + 49000*Y(Main_Dewitt_01,Q1) + 49000*Y(Main_Dewitt_01,Q2) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
      
-LeakContinuity(Trans_Dewitt_01,Q3)..  W_lost(Trans_Dewitt_01,Q3) + 49000*Y(Trans_Dewitt_01,Q1) + 49000*Y(Trans_Dewitt_01,Q2) + 49000*Y(Trans_Dewitt_01,Q3) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
+LeakContinuity(Main_Dewitt_01,Q3)..  W_lost(Main_Dewitt_01,Q3) + 49000*Y(Main_Dewitt_01,Q1) + 49000*Y(Main_Dewitt_01,Q2) + 49000*Y(Main_Dewitt_01,Q3) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
      
 REMAINING 25 ENTRIES SKIPPED
 
 
 ---- SingleRepair  =L=  Logical constraint: a pipe is repaired max once per year
 
-SingleRepair(Trans_Dewitt_01)..  Y(Trans_Dewitt_01,Q1) + Y(Trans_Dewitt_01,Q2) + Y(Trans_Dewitt_01,Q3) + Y(Trans_Dewitt_01,Q4) =L= 1 ; (LHS = 0)
+SingleRepair(Main_Dewitt_01)..  Y(Main_Dewitt_01,Q1) + Y(Main_Dewitt_01,Q2) + Y(Main_Dewitt_01,Q3) + Y(Main_Dewitt_01,Q4) =L= 1 ; (LHS = 0)
      
-SingleRepair(Trans_Dewitt_02)..  Y(Trans_Dewitt_02,Q1) + Y(Trans_Dewitt_02,Q2) + Y(Trans_Dewitt_02,Q3) + Y(Trans_Dewitt_02,Q4) =L= 1 ; (LHS = 0)
+SingleRepair(Main_Dewitt_02)..  Y(Main_Dewitt_02,Q1) + Y(Main_Dewitt_02,Q2) + Y(Main_Dewitt_02,Q3) + Y(Main_Dewitt_02,Q4) =L= 1 ; (LHS = 0)
      
 SingleRepair(Dist_CastleH_01)..  Y(Dist_CastleH_01,Q1) + Y(Dist_CastleH_01,Q2) + Y(Dist_CastleH_01,Q3) + Y(Dist_CastleH_01,Q4) =L= 1 ; (LHS = 0)
      
 REMAINING 4 ENTRIES SKIPPED
 
-GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 3
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:43:36 Page 3
 Optimizing Leak Management Strategies for Logan Water Networks
 Column Listing      SOLVE LoganLeakModel Using MIP From line 202
 
@@ -299,82 +299,82 @@ Z_obj
 
 ---- W_lost  Volume of water lost from pipe i in time t (m3)
 
-W_lost(Trans_Dewitt_01,Q1)
+W_lost(Main_Dewitt_01,Q1)
                 (.LO, .L, .UP, .M = 0, 0, +INF, 0)
        -0.82    ObjFunction
        -1       DeliveryConst(Q1)
-        1       LeakContinuity(Trans_Dewitt_01,Q1)
+        1       LeakContinuity(Main_Dewitt_01,Q1)
 
-W_lost(Trans_Dewitt_01,Q2)
+W_lost(Main_Dewitt_01,Q2)
                 (.LO, .L, .UP, .M = 0, 0, +INF, 0)
        -0.82    ObjFunction
        -1       DeliveryConst(Q2)
-        1       LeakContinuity(Trans_Dewitt_01,Q2)
+        1       LeakContinuity(Main_Dewitt_01,Q2)
 
-W_lost(Trans_Dewitt_01,Q3)
+W_lost(Main_Dewitt_01,Q3)
                 (.LO, .L, .UP, .M = 0, 0, +INF, 0)
        -0.82    ObjFunction
        -1       DeliveryConst(Q3)
-        1       LeakContinuity(Trans_Dewitt_01,Q3)
+        1       LeakContinuity(Main_Dewitt_01,Q3)
 
 REMAINING 25 ENTRIES SKIPPED
 
 ---- X  1 if pipe i is inspected in time t
 
-X(Trans_Dewitt_01,Q1)
+X(Main_Dewitt_01,Q1)
                 (.LO, .L, .UP, .M = 0, 0, 1, 0)
     -1500       ObjFunction
      1500       BudgetConst(Q1)
-       -1       InspectReq(Trans_Dewitt_01,Q1)
+       -1       InspectReq(Main_Dewitt_01,Q1)
 
-X(Trans_Dewitt_01,Q2)
+X(Main_Dewitt_01,Q2)
                 (.LO, .L, .UP, .M = 0, 0, 1, 0)
     -1500       ObjFunction
      1500       BudgetConst(Q2)
-       -1       InspectReq(Trans_Dewitt_01,Q2)
+       -1       InspectReq(Main_Dewitt_01,Q2)
 
-X(Trans_Dewitt_01,Q3)
+X(Main_Dewitt_01,Q3)
                 (.LO, .L, .UP, .M = 0, 0, 1, 0)
     -1500       ObjFunction
      1500       BudgetConst(Q3)
-       -1       InspectReq(Trans_Dewitt_01,Q3)
+       -1       InspectReq(Main_Dewitt_01,Q3)
 
 REMAINING 25 ENTRIES SKIPPED
 
 ---- Y  1 if pipe i is repaired in time t
 
-Y(Trans_Dewitt_01,Q1)
+Y(Main_Dewitt_01,Q1)
                 (.LO, .L, .UP, .M = 0, 0, 1, 0)
    -25000       ObjFunction
     25000       BudgetConst(Q1)
-        1       InspectReq(Trans_Dewitt_01,Q1)
-    49000       LeakContinuity(Trans_Dewitt_01,Q1)
-    49000       LeakContinuity(Trans_Dewitt_01,Q2)
-    49000       LeakContinuity(Trans_Dewitt_01,Q3)
-    49000       LeakContinuity(Trans_Dewitt_01,Q4)
-        1       SingleRepair(Trans_Dewitt_01)
+        1       InspectReq(Main_Dewitt_01,Q1)
+    49000       LeakContinuity(Main_Dewitt_01,Q1)
+    49000       LeakContinuity(Main_Dewitt_01,Q2)
+    49000       LeakContinuity(Main_Dewitt_01,Q3)
+    49000       LeakContinuity(Main_Dewitt_01,Q4)
+        1       SingleRepair(Main_Dewitt_01)
 
-Y(Trans_Dewitt_01,Q2)
+Y(Main_Dewitt_01,Q2)
                 (.LO, .L, .UP, .M = 0, 0, 1, 0)
    -25000       ObjFunction
     25000       BudgetConst(Q2)
-        1       InspectReq(Trans_Dewitt_01,Q2)
-    49000       LeakContinuity(Trans_Dewitt_01,Q2)
-    49000       LeakContinuity(Trans_Dewitt_01,Q3)
-    49000       LeakContinuity(Trans_Dewitt_01,Q4)
-        1       SingleRepair(Trans_Dewitt_01)
+        1       InspectReq(Main_Dewitt_01,Q2)
+    49000       LeakContinuity(Main_Dewitt_01,Q2)
+    49000       LeakContinuity(Main_Dewitt_01,Q3)
+    49000       LeakContinuity(Main_Dewitt_01,Q4)
+        1       SingleRepair(Main_Dewitt_01)
 
-Y(Trans_Dewitt_01,Q3)
+Y(Main_Dewitt_01,Q3)
                 (.LO, .L, .UP, .M = 0, 0, 1, 0)
    -25000       ObjFunction
     25000       BudgetConst(Q3)
-        1       InspectReq(Trans_Dewitt_01,Q3)
-    49000       LeakContinuity(Trans_Dewitt_01,Q3)
-    49000       LeakContinuity(Trans_Dewitt_01,Q4)
-        1       SingleRepair(Trans_Dewitt_01)
+        1       InspectReq(Main_Dewitt_01,Q3)
+    49000       LeakContinuity(Main_Dewitt_01,Q3)
+    49000       LeakContinuity(Main_Dewitt_01,Q4)
+        1       SingleRepair(Main_Dewitt_01)
 
 REMAINING 25 ENTRIES SKIPPED
-GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 4
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:43:36 Page 4
 Optimizing Leak Management Strategies for Logan Water Networks
 Range Statistics    SOLVE LoganLeakModel Using MIP From line 202
 
@@ -385,7 +385,7 @@ RHS       [min, max] : [ 1.000E+00, 6.400E+06] - Zero values observed as well
 Bound     [min, max] : [ 1.000E+00, 1.000E+00] - Zero values observed as well
 Matrix    [min, max] : [ 8.200E-01, 4.900E+04]
 
-GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 5
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:43:36 Page 5
 Optimizing Leak Management Strategies for Logan Water Networks
 Model Statistics    SOLVE LoganLeakModel Using MIP From line 202
 
@@ -397,8 +397,8 @@ BLOCKS OF VARIABLES           4     SINGLE VARIABLES           85
 NON ZERO ELEMENTS           351     DISCRETE VARIABLES         56
 
 
-GENERATION TIME      =        0.156 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
-GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 6
+GENERATION TIME      =        0.016 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:43:36 Page 6
 Optimizing Leak Management Strategies for Logan Water Networks
 Solution Report     SOLVE LoganLeakModel Using MIP From line 202
 
@@ -413,7 +413,7 @@ Solution Report     SOLVE LoganLeakModel Using MIP From line 202
 **** MODEL STATUS      1 Optimal
 **** OBJECTIVE VALUE           238620.0000
 
- RESOURCE USAGE, LIMIT          0.047 10000000000.000
+ RESOURCE USAGE, LIMIT          0.031 10000000000.000
  ITERATION COUNT, LIMIT        32    2147483647
 *** This solver runs with a community license.
 --- GMO setup time: 0.00s
@@ -424,7 +424,7 @@ Solution Report     SOLVE LoganLeakModel Using MIP From line 202
 
 
 --- MIP status (101): integer optimal solution.
---- Cplex Time: 0.05sec (det. 0.64 ticks)
+--- Cplex Time: 0.03sec (det. 0.64 ticks)
 
 --- Returning a primal only solution to GAMS (marginals all set to NA).
 --- Fixing integer variables and solving final LP...
@@ -462,14 +462,14 @@ Q4        -INF             .         15000.0000          .
 
                           LOWER          LEVEL          UPPER         MARGINAL
 
-Trans_Dewitt_01.Q1        -INF             .              .              .          
-Trans_Dewitt_01.Q2        -INF             .              .              .          
-Trans_Dewitt_01.Q3        -INF             .              .              .          
-Trans_Dewitt_01.Q4        -INF             .              .              .          
-Trans_Dewitt_02.Q1        -INF             .              .              .          
-Trans_Dewitt_02.Q2        -INF             .              .              .          
-Trans_Dewitt_02.Q3        -INF             .              .              .          
-Trans_Dewitt_02.Q4        -INF             .              .              .          
+Main_Dewitt_01 .Q1        -INF             .              .              .          
+Main_Dewitt_01 .Q2        -INF             .              .              .          
+Main_Dewitt_01 .Q3        -INF             .              .              .          
+Main_Dewitt_01 .Q4        -INF             .              .              .          
+Main_Dewitt_02 .Q1        -INF             .              .              .          
+Main_Dewitt_02 .Q2        -INF             .              .              .          
+Main_Dewitt_02 .Q3        -INF             .              .              .          
+Main_Dewitt_02 .Q4        -INF             .              .              .          
 Dist_CastleH_01.Q1        -INF             .              .              .          
 Dist_CastleH_01.Q2        -INF             .              .              .          
 Dist_CastleH_01.Q3        -INF             .              .              .          
@@ -504,14 +504,14 @@ Q4   -6.400000E+6     -9800.0000        +INF             .
 
                           LOWER          LEVEL          UPPER         MARGINAL
 
-Trans_Dewitt_01.Q1     49000.0000     49000.0000     49000.0000         0.8200      
-Trans_Dewitt_01.Q2     49000.0000     49000.0000     49000.0000          .          
-Trans_Dewitt_01.Q3     49000.0000     49000.0000     49000.0000          .          
-Trans_Dewitt_01.Q4     49000.0000     49000.0000     49000.0000          .          
-Trans_Dewitt_02.Q1     49000.0000     49000.0000     49000.0000         0.8200      
-Trans_Dewitt_02.Q2     49000.0000     49000.0000     49000.0000         0.8200      
-Trans_Dewitt_02.Q3     49000.0000     49000.0000     49000.0000          .          
-Trans_Dewitt_02.Q4     49000.0000     49000.0000     49000.0000          .          
+Main_Dewitt_01 .Q1     49000.0000     49000.0000     49000.0000         0.8200      
+Main_Dewitt_01 .Q2     49000.0000     49000.0000     49000.0000          .          
+Main_Dewitt_01 .Q3     49000.0000     49000.0000     49000.0000          .          
+Main_Dewitt_01 .Q4     49000.0000     49000.0000     49000.0000          .          
+Main_Dewitt_02 .Q1     49000.0000     49000.0000     49000.0000         0.8200      
+Main_Dewitt_02 .Q2     49000.0000     49000.0000     49000.0000         0.8200      
+Main_Dewitt_02 .Q3     49000.0000     49000.0000     49000.0000          .          
+Main_Dewitt_02 .Q4     49000.0000     49000.0000     49000.0000          .          
 Dist_CastleH_01.Q1      4900.0000      4900.0000      4900.0000          .          
 Dist_CastleH_01.Q2      4900.0000      4900.0000      4900.0000          .          
 Dist_CastleH_01.Q3      4900.0000      4900.0000      4900.0000          .          
@@ -537,8 +537,8 @@ Dist_Upper_02  .Q4      4900.0000      4900.0000      4900.0000         0.8200
 
                        LOWER          LEVEL          UPPER         MARGINAL
 
-Trans_Dewitt_01        -INF            1.0000         1.0000          .          
-Trans_Dewitt_02        -INF            1.0000         1.0000          .          
+Main_Dewitt_01         -INF            1.0000         1.0000          .          
+Main_Dewitt_02         -INF            1.0000         1.0000          .          
 Dist_CastleH_01        -INF            1.0000         1.0000          .          
 Dist_CastleH_02        -INF            1.0000         1.0000          .          
 Dist_CastleH_03        -INF            1.0000         1.0000          .          
@@ -555,14 +555,14 @@ Dist_Upper_02          -INF             .             1.0000          .
 
                           LOWER          LEVEL          UPPER         MARGINAL
 
-Trans_Dewitt_01.Q1          .         49000.0000        +INF             .          
-Trans_Dewitt_01.Q2          .              .            +INF            0.8200      
-Trans_Dewitt_01.Q3          .              .            +INF            0.8200      
-Trans_Dewitt_01.Q4          .              .            +INF            0.8200      
-Trans_Dewitt_02.Q1          .         49000.0000        +INF             .          
-Trans_Dewitt_02.Q2          .         49000.0000        +INF             .          
-Trans_Dewitt_02.Q3          .              .            +INF            0.8200      
-Trans_Dewitt_02.Q4          .              .            +INF            0.8200      
+Main_Dewitt_01 .Q1          .         49000.0000        +INF             .          
+Main_Dewitt_01 .Q2          .              .            +INF            0.8200      
+Main_Dewitt_01 .Q3          .              .            +INF            0.8200      
+Main_Dewitt_01 .Q4          .              .            +INF            0.8200      
+Main_Dewitt_02 .Q1          .         49000.0000        +INF             .          
+Main_Dewitt_02 .Q2          .         49000.0000        +INF             .          
+Main_Dewitt_02 .Q3          .              .            +INF            0.8200      
+Main_Dewitt_02 .Q4          .              .            +INF            0.8200      
 Dist_CastleH_01.Q1          .              .            +INF            0.8200      
 Dist_CastleH_01.Q2          .              .            +INF            0.8200      
 Dist_CastleH_01.Q3          .              .            +INF            0.8200      
@@ -588,14 +588,14 @@ Dist_Upper_02  .Q4          .          4900.0000        +INF             .
 
                           LOWER          LEVEL          UPPER         MARGINAL
 
-Trans_Dewitt_01.Q1          .              .             1.0000      1500.0000      
-Trans_Dewitt_01.Q2          .             1.0000         1.0000      1500.0000      
-Trans_Dewitt_01.Q3          .              .             1.0000      1500.0000      
-Trans_Dewitt_01.Q4          .              .             1.0000      1500.0000      
-Trans_Dewitt_02.Q1          .              .             1.0000      1500.0000      
-Trans_Dewitt_02.Q2          .              .             1.0000      1500.0000      
-Trans_Dewitt_02.Q3          .             1.0000         1.0000      1500.0000      
-Trans_Dewitt_02.Q4          .              .             1.0000      1500.0000      
+Main_Dewitt_01 .Q1          .              .             1.0000      1500.0000      
+Main_Dewitt_01 .Q2          .             1.0000         1.0000      1500.0000      
+Main_Dewitt_01 .Q3          .              .             1.0000      1500.0000      
+Main_Dewitt_01 .Q4          .              .             1.0000      1500.0000      
+Main_Dewitt_02 .Q1          .              .             1.0000      1500.0000      
+Main_Dewitt_02 .Q2          .              .             1.0000      1500.0000      
+Main_Dewitt_02 .Q3          .             1.0000         1.0000      1500.0000      
+Main_Dewitt_02 .Q4          .              .             1.0000      1500.0000      
 Dist_CastleH_01.Q1          .             1.0000         1.0000       300.0000      
 Dist_CastleH_01.Q2          .              .             1.0000       300.0000      
 Dist_CastleH_01.Q3          .              .             1.0000       300.0000      
@@ -621,14 +621,14 @@ Dist_Upper_02  .Q4          .              .             1.0000       300.0000
 
                           LOWER          LEVEL          UPPER         MARGINAL
 
-Trans_Dewitt_01.Q1          .              .             1.0000    -15180.0000      
-Trans_Dewitt_01.Q2          .             1.0000         1.0000     25000.0000      
-Trans_Dewitt_01.Q3          .              .             1.0000     25000.0000      
-Trans_Dewitt_01.Q4          .              .             1.0000     25000.0000      
-Trans_Dewitt_02.Q1          .              .             1.0000    -55360.0000      
-Trans_Dewitt_02.Q2          .              .             1.0000    -15180.0000      
-Trans_Dewitt_02.Q3          .             1.0000         1.0000     25000.0000      
-Trans_Dewitt_02.Q4          .              .             1.0000     25000.0000      
+Main_Dewitt_01 .Q1          .              .             1.0000    -15180.0000      
+Main_Dewitt_01 .Q2          .             1.0000         1.0000     25000.0000      
+Main_Dewitt_01 .Q3          .              .             1.0000     25000.0000      
+Main_Dewitt_01 .Q4          .              .             1.0000     25000.0000      
+Main_Dewitt_02 .Q1          .              .             1.0000    -55360.0000      
+Main_Dewitt_02 .Q2          .              .             1.0000    -15180.0000      
+Main_Dewitt_02 .Q3          .             1.0000         1.0000     25000.0000      
+Main_Dewitt_02 .Q4          .              .             1.0000     25000.0000      
 Dist_CastleH_01.Q1          .             1.0000         1.0000      8000.0000      
 Dist_CastleH_01.Q2          .              .             1.0000      8000.0000      
 Dist_CastleH_01.Q3          .              .             1.0000      8000.0000      
@@ -654,7 +654,7 @@ Dist_Upper_02  .Q4          .              .             1.0000      3982.0000
 **** REPORT SUMMARY :        0     NONOPT
                              0 INFEASIBLE
                              0  UNBOUNDED
-GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 7
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:43:36 Page 7
 Optimizing Leak Management Strategies for Logan Water Networks
 E x e c u t i o n
 
@@ -665,8 +665,8 @@ E x e c u t i o n
 
                          Q1          Q2          Q3
 
-Trans_Dewitt_01                   1.000
-Trans_Dewitt_02                               1.000
+Main_Dewitt_01                    1.000
+Main_Dewitt_02                                1.000
 Dist_CastleH_01       1.000
 Dist_CastleH_02                   1.000
 Dist_CastleH_03                   1.000
@@ -676,8 +676,8 @@ Dist_CastleH_03                   1.000
 
                          Q1          Q2          Q3
 
-Trans_Dewitt_01                   1.000
-Trans_Dewitt_02                               1.000
+Main_Dewitt_01                    1.000
+Main_Dewitt_02                                1.000
 Dist_CastleH_01       1.000
 Dist_CastleH_02                   1.000
 Dist_CastleH_03                   1.000
@@ -687,8 +687,8 @@ Dist_CastleH_03                   1.000
 
                          Q1          Q2          Q3          Q4
 
-Trans_Dewitt_01   49000.000
-Trans_Dewitt_02   49000.000   49000.000
+Main_Dewitt_01    49000.000
+Main_Dewitt_02    49000.000   49000.000
 Dist_CastleH_02    4900.000
 Dist_CastleH_03    4900.000
 Dist_Upper_01      4900.000    4900.000    4900.000    4900.000
@@ -701,7 +701,7 @@ Inspection   3900.000,    Repair      74000.000,    WaterLoss  160720.000
 
 
 
-EXECUTION TIME       =        0.609 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+EXECUTION TIME       =        0.141 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
 
 
 USER: Course License                                 G250902+0003Ac-GEN
