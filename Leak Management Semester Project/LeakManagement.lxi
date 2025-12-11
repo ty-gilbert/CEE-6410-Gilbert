@@ -1,0 +1,32 @@
+B 3 C o m p i l a t i o n
+B 226 Equation Listing    SOLVE LoganLeakModel Using MIP From line 202
+D 229 ObjFunction
+D 234 BudgetConst
+D 245 InspectReq
+D 256 DeliveryConst
+D 267 LeakContinuity
+D 278 SingleRepair
+B 290 Column Listing      SOLVE LoganLeakModel Using MIP From line 202
+E 293 Z_obj
+E 300 W_lost
+E 322 X
+E 344 Y
+B 379 Range Statistics    SOLVE LoganLeakModel Using MIP From line 202
+B 390 Model Statistics    SOLVE LoganLeakModel Using MIP From line 202
+B 403 Solution Report     SOLVE LoganLeakModel Using MIP From line 202
+F 448 ObjFunction
+F 452 BudgetConst
+F 461 InspectReq
+F 494 DeliveryConst
+F 503 LeakContinuity
+F 536 SingleRepair
+G 550 Z_obj
+G 554 W_lost
+G 587 X
+G 620 Y
+B 659 E x e c u t i o n
+I 661 Z_obj
+I 662 X
+I 673 Y
+I 684 W_lost
+I 696 CostBreakdown

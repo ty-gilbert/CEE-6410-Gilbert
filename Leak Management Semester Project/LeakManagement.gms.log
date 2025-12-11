@@ -1,0 +1,139 @@
+
+--- Job LeakManagement.gms Start 12/11/25 13:01:18 51.1.0 2d039df5 WEX-WEI x86 64bit/MS Windows
+--- Applying:
+    C:\GAMS\51\gmsprmNT.txt
+    C:\Users\Skool\OneDrive - USU\Documents\GAMS\gamsconfig.yaml
+--- GAMS Parameters defined
+    Input "C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\Github repo\CEE-6410-Gilbert\Leak Management Semester Project\LeakManagement.gms"
+    PageSize 0
+    ScrDir "C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\Github repo\CEE-6410-Gilbert\Leak Management Semester Project\225a\"
+    SysDir C:\GAMS\51\
+    LogOption 3
+    AppendLog 1
+    ErrMsg 1
+    ErrorLog 99
+    IDE 1
+    LstTitleLeftAligned 1
+Licensee: Course License                                 G250902+0003Ac-GEN
+          Utah State University                                     DCE4709
+          225a\gamslice.dat
+          node:22724503 mem:16 cores:4 ipport:60719 uses:0@0 v:2           
+          Course license for use within the course and related course work
+          The expiration date of time-limited license is Dec 31, 2025
+System information: 4 physical cores and 16 Gb physical memory detected
+GAMS 51.1.0   Copyright (C) 1987-2025 GAMS Development. All rights reserved
+--- Starting compilation
+--- LeakManagement.gms(218) 3 Mb
+--- Starting execution: elapsed 0:00:00.054
+--- LeakManagement.gms(133) 4 Mb
+--- Generating MIP model LoganLeakModel
+--- LeakManagement.gms(202) 4 Mb
+---   72 rows  85 columns  351 non-zeroes
+---   56 discrete-columns
+--- Range statistics (absolute non-zero finite values)
+--- RHS       [min, max] : [ 1.000E+00, 6.400E+06] - Zero values observed as well
+--- Bound     [min, max] : [ 1.000E+00, 1.000E+00] - Zero values observed as well
+--- Matrix    [min, max] : [ 8.200E-01, 4.900E+04]
+--- Executing CPLEX (Solvelink=2): elapsed 0:00:00.204
+
+IBM ILOG CPLEX   51.1.0 2d039df5 Sep 13, 2025          WEI x86 64bit/MS Window
+
+*** This solver runs with a community license.
+--- GMO setup time: 0.00s
+--- GMO memory 0.52 Mb (peak 0.52 Mb)
+--- Dictionary memory 0.00 Mb
+--- Cplex 22.1.2.0 link memory 0.00 Mb (peak 0.01 Mb)
+--- Starting Cplex
+
+Version identifier: 22.1.2.0 | 2024-11-25 | 0edbb82fd
+CPXPARAM_Advance                                 0
+CPXPARAM_MIP_Display                             4
+CPXPARAM_MIP_Pool_Capacity                       0
+CPXPARAM_MIP_Tolerances_AbsMIPGap                0
+Generic callback                                 0x50
+Found incumbent of value 401800.000000 after 0.00 sec. (0.00 ticks)
+Tried aggregator 2 times.
+MIP Presolve eliminated 19 rows and 18 columns.
+MIP Presolve modified 38 coefficients.
+Aggregator did 24 substitutions.
+Reduced MIP has 21 rows, 41 columns, and 90 nonzeros.
+Reduced MIP has 24 binaries, 0 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.02 sec. (0.18 ticks)
+Probing time = 0.00 sec. (0.02 ticks)
+Tried aggregator 1 time.
+Detecting symmetries...
+Reduced MIP has 21 rows, 41 columns, and 90 nonzeros.
+Reduced MIP has 24 binaries, 17 generals, 0 SOSs, and 0 indicators.
+Presolve time = 0.00 sec. (0.08 ticks)
+Probing time = 0.00 sec. (0.02 ticks)
+Clique table members: 11.
+MIP emphasis: balance optimality and feasibility.
+MIP search method: dynamic search.
+Parallel mode: deterministic, using up to 8 threads.
+Parallel mode: deterministic, using up to 2 threads for parallel tasks at root LP.
+Tried aggregator 1 time.
+No LP presolve or aggregator reductions.
+Presolve time = 0.00 sec. (0.02 ticks)
+
+Iteration log . . .
+Iteration:     1   Dual objective     =        157468.000000
+Root relaxation solution time = 0.00 sec. (0.05 ticks)
+
+        Nodes                                         Cuts/
+   Node  Left     Objective  IInf  Best Integer    Best Bound    ItCnt     Gap
+
+*     0+    0                       401800.0000   153450.0000            61.81%
+Found incumbent of value 401800.000000 after 0.02 sec. (0.43 ticks)
+*     0+    0                       238620.0000   153450.0000            35.69%
+Found incumbent of value 238620.000000 after 0.02 sec. (0.43 ticks)
+      0     0   218077.8113     2   238620.0000   218077.8113       24    8.61%
+      0     0   237760.6506     4   238620.0000       Cuts: 4       29    0.36%
+      0     0        cutoff         238620.0000                     32    0.00%
+Elapsed time = 0.05 sec. (0.64 ticks, tree = 0.01 MB)
+
+Clique cuts applied:  3
+Cover cuts applied:  2
+Gomory fractional cuts applied:  1
+
+Root node processing (before b&c):
+  Real time             =    0.05 sec. (0.64 ticks)
+Parallel b&c, 8 threads:
+  Real time             =    0.00 sec. (0.00 ticks)
+  Sync time (average)   =    0.00 sec.
+  Wait time (average)   =    0.00 sec.
+                          ------------
+Total (root+branch&cut) =    0.05 sec. (0.64 ticks)
+
+--- MIP status (101): integer optimal solution.
+--- Cplex Time: 0.05sec (det. 0.64 ticks)
+
+--- Returning a primal only solution to GAMS (marginals all set to NA).
+--- Fixing integer variables and solving final LP...
+
+Version identifier: 22.1.2.0 | 2024-11-25 | 0edbb82fd
+CPXPARAM_Advance                                 2
+CPXPARAM_MIP_Display                             4
+CPXPARAM_MIP_Pool_Capacity                       0
+CPXPARAM_MIP_Tolerances_AbsMIPGap                0
+Tried aggregator 1 time.
+LP Presolve eliminated 71 rows and 85 columns.
+All rows and columns eliminated.
+Presolve time = 0.00 sec. (0.04 ticks)
+
+--- Fixed MIP status (1): optimal.
+--- Cplex Time: 0.00sec (det. 0.07 ticks)
+
+
+Proven optimal solution
+MIP Solution:       238620.000000    (32 iterations, 0 nodes)
+Final Solve:        238620.000000    (0 iterations)
+
+Best possible:      238620.000000
+Absolute gap:            0.000000
+Relative gap:            0.000000
+
+--- Reading solution for model LoganLeakModel
+--- Executing after solve: elapsed 0:00:00.657
+--- LeakManagement.gms(218) 4 Mb
+*** Status: Normal completion
+--- Job LeakManagement.gms Stop 12/11/25 13:01:19 elapsed 0:00:00.658

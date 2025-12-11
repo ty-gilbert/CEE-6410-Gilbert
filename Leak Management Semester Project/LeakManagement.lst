@@ -1,0 +1,715 @@
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 1
+Optimizing Leak Management Strategies for Logan Water Networks
+C o m p i l a t i o n
+
+
+      Project: Optimizing Leak Management Strategies for Water Networks
+      Author: Ty Gilbert
+      Course: CEE 6410
+      Date: December 11, 2025
+      Location: Logan, Utah (Dewitt Springs Subsystem)
+       
+      Description:
+      This MILP model minimizes the total cost of inspection, repair, and water loss
+      for the high-elevation subsystem.
+       
+      Updates based on 2025/2016 Data Sources:
+      1. Water Price ($0.82/m3) derived from "Research on Water Price and Quantity" 
+         (suggested basic price ~5.78 Yuan).
+      2. Repair Costs ($10k avg) and Break Rates derived from USU Water Main Break Study.
+         - Cast Iron break rate: ~28.6/100mi/yr (High Risk)
+         - PVC break rate: ~2.9/100mi/yr (Low Risk)
+      3. Logan System Data derived from 2016 Master Plan (Table 3-3, Table 7-2).
+         - Dewitt Springs Capacity: 10,000 gpm
+         - Zone Demands converted from gpm to m3/quarter.
+  23   
+  24  * -----------------------------------------------------------------------------
+  25  * 1. SETS AND DEFINITIONS
+  26  * -----------------------------------------------------------------------------
+  27   
+  28  Sets
+  29      i   Pipe segments /
+  30          Trans_Dewitt_01   "Aging Cast Iron Transmission Main (High Break Rate)"
+  31          Trans_Dewitt_02   "Aging Cast Iron Transmission Main"
+  32          Dist_CastleH_01   "Residential PVC (Low Break Rate)"
+  33          Dist_CastleH_02   "Residential PVC"
+  34          Dist_CastleH_03   "Residential PVC"
+  35          Dist_Upper_01     "Residential Mixed (Medium Break Rate)"
+  36          Dist_Upper_02     "Residential Mixed"
+  37      /
+  38   
+  39      t   Time periods (Quarters) / Q1*Q4 /
+  40   
+  41      z   Pressure Zones / CastleHills, Upper, USU /;
+  42   
+  43  Alias(t, tt);
+  44   
+  45  * -----------------------------------------------------------------------------
+  46  * 2. PARAMETERS (DATA INPUT)
+  47  * -----------------------------------------------------------------------------
+  48   
+  49  Scalars
+  50  * Source: Research on Water Price and Quantity (2024), Table 6.
+  51  * Converted 5.78 Yuan/m3 to approx $0.82/m3.
+  52      C_water      Value of treated water lost ($ per m3)         / 0.82 /
+  53   
+  54  * Source: Logan Master Plan 2016, Table 3-1.
+  55  * Dewitt Springs Capacity = 10,000 gpm.
+  56  * ADDED: Crockett Well (5,500 gpm) and 7th North Well (4,000 gpm) to meet summer peaks.
+  57  * Total Capacity ~ 19,500 gpm
+  58  * 19,500 gpm * 1440 min/day * 90 days * 0.003785 m3/gal = ~9,500,000 m3/qtr
+  59  * Previous value (4.9M) was insufficient for Q2/Q3 demand of 5.35M.
+  60      Total_Supply Available water supply per quarter (m3)        / 9500000 /;
+  61   
+  62  Parameters
+  63      L_rate(i)    Baseline leak volume per quarter if pipe i fails (m3)
+  64      C_inspect(i) Cost to inspect pipe segment ($)
+  65      C_repair(i)  Cost to repair pipe segment ($);
+  66   
+  67  * -----------------------------------------------------------------------------
+  68  * DATA CALIBRATION
+  69  * Source: Water Main Break Rates in the USA and Canada (2023)
+  70  * - Repair Cost Avg: ~$10,000
+  71  * - Cast Iron Break Rate: 28.6 (High frequency -> modeled as likely large leak)
+  72  * - PVC Break Rate: 2.9 (Low frequency)
+  73  * -----------------------------------------------------------------------------
+  74   
+  75  * -- Transmission Mains (Aging Cast Iron) --
+  76  * Modeled as high consequence (large volume loss) and high repair cost.
+  77  * Leak Volume: Assume 100 gpm leak = ~49,000 m3/quarter
+  78  L_rate('Trans_Dewitt_01') = 49000;
+  79  L_rate('Trans_Dewitt_02') = 49000;
+  80  * Inspection cost (Acoustic methods for large diameter)
+  81  C_inspect('Trans_Dewitt_01') = 1500;
+  82  C_inspect('Trans_Dewitt_02') = 1500;
+  83  * Repair Cost (Large diameter, deep bury)
+  84  C_repair('Trans_Dewitt_01')  = 25000;
+  85  C_repair('Trans_Dewitt_02')  = 25000;
+  86   
+  87  * -- Distribution Lines (Residential PVC/Mixed) --
+  88  * Modeled as lower consequence (smaller volume) and lower repair cost.
+  89  * Leak Volume: Assume 10 gpm leak = ~4,900 m3/quarter
+  90  L_rate('Dist_CastleH_01') = 4900;
+  91  L_rate('Dist_CastleH_02') = 4900;
+  92  L_rate('Dist_CastleH_03') = 4900;
+  93  L_rate('Dist_Upper_01')   = 4900;
+  94  L_rate('Dist_Upper_02')   = 4900;
+  95   
+  96  C_inspect('Dist_CastleH_01') = 300;
+  97  C_inspect('Dist_CastleH_02') = 300;
+  98  C_inspect('Dist_CastleH_03') = 300;
+  99  C_inspect('Dist_Upper_01')   = 300;
+ 100  C_inspect('Dist_Upper_02')   = 300;
+ 101   
+ 102  * Avg Repair cost from Break Rate Study is ~$10k.
+ 103  * Distribution repairs are cheaper than Transmission.
+ 104  C_repair('Dist_CastleH_01') = 8000;
+ 105  C_repair('Dist_CastleH_02') = 8000;
+ 106  C_repair('Dist_CastleH_03') = 8000;
+ 107  C_repair('Dist_Upper_01')   = 8000;
+ 108  C_repair('Dist_Upper_02')   = 8000;
+ 109   
+ 110  Parameter Budget(t) Maintenance budget available in period t ($);
+ 111  * Source: Logan Master Plan Table 7-2 suggests ~$900k annual replacement budget.
+ 112  * Since this model focuses on the Dewitt Springs/High Elevation subsystem only,
+ 113  * we assume this subsystem receives ~13-15% of the total city budget.
+ 114  * Total Annual Allocation: ~$120,000
+ 115  * Quarterly breakdown reflects seasonal constraints (winter vs summer work).
+ 116  Budget('Q1') = 15000;
+ 117  Budget('Q2') = 45000;
+ 118  Budget('Q3') = 45000;
+ 119  Budget('Q4') = 15000;
+ 120   
+ 121  * Source: Logan Master Plan Table 3-3 (Existing Source Requirements)
+ 122  * Castle Hills Demand: 918 gpm  -> ~450,000 m3/qtr
+ 123  * Upper Demand: 5,091 gpm       -> ~2,500,000 m3/qtr
+ 124  * USU Demand: 3,019 gpm         -> ~1,500,000 m3/qtr
+ 125  * Note: Q2/Q3 are higher due to irrigation (Summer).
+ 126  Table ZoneDemand(z,t) Mandatory water demand for zone z in period t (m3)
+ 127                   Q1        Q2        Q3        Q4
+ 128      CastleHills  300000    550000    550000    300000
+ 129      Upper        1800000   3000000   3000000   1800000
+ 130      USU          1000000   1800000   1800000   1000000;
+ 131   
+ 132  Parameter TotalDemand(t);
+ 133  TotalDemand(t) = sum(z, ZoneDemand(z,t));
+ 134   
+ 135  * -----------------------------------------------------------------------------
+ 136  * 3. VARIABLES
+ 137  * -----------------------------------------------------------------------------
+ 138   
+ 139  Variables
+ 140      Z_obj        Total Cost (Objective Function Value)
+ 141      W_lost(i,t)  Volume of water lost from pipe i in time t (m3);
+ 142   
+ 143  Binary Variables
+ 144      X(i,t)       1 if pipe i is inspected in time t
+ 145      Y(i,t)       1 if pipe i is repaired in time t;
+ 146   
+ 147  positive variable W_lost;
+ 148   
+ 149  * -----------------------------------------------------------------------------
+ 150  * 4. EQUATIONS (CONSTRAINTS)
+ 151  * -----------------------------------------------------------------------------
+ 152   
+ 153  Equations
+ 154      ObjFunction          Minimize total cost
+ 155      BudgetConst(t)       Total spending cannot exceed quarterly budget
+ 156      InspectReq(i,t)      Cannot repair unless inspected
+ 157      DeliveryConst(t)     Ensure supply meets demand after losses
+ 158      LeakContinuity(i,t)  Calculate water loss based on repair history
+ 159      SingleRepair(i)      Logical constraint: a pipe is repaired max once per year;
+ 160   
+ 161  * -- 1. Objective Function --
+ 162  * Min Z = Inspection Cost + Repair Cost + Water Loss Cost
+ 163  ObjFunction..
+ 164      Z_obj =e= sum((t,i),
+ 165                  (C_inspect(i) * X(i,t)) +
+ 166                  (C_repair(i)  * Y(i,t)) +
+ 167                  (C_water      * W_lost(i,t))
+ 168                );
+ 169   
+ 170  * -- 2. Budget Constraint --
+ 171  BudgetConst(t)..
+ 172      sum(i, C_inspect(i)*X(i,t) + C_repair(i)*Y(i,t)) =l= Budget(t);
+ 173   
+ 174  * -- 3. Inspection Pre-requisite --
+ 175  * Y cannot be 1 unless X is 1
+ 176  InspectReq(i,t)..
+ 177      Y(i,t) =l= X(i,t);
+ 178   
+ 179  * -- 4. Volumetric Delivery --
+ 180  * Supply minus total leakage must be greater than or equal to Demand
+ 181  DeliveryConst(t)..
+ 182      Total_Supply - sum(i, W_lost(i,t)) =g= TotalDemand(t);
+ 183   
+ 184  * -- 5. Leak State Continuity (Memory) --
+ 185  * Water loss happens if no repair has occurred up to (and including) time t.
+ 186  * The term "1 - sum(...)" becomes 0 once a repair happens, stopping the leak.
+ 187  LeakContinuity(i,t)..
+ 188      W_lost(i,t) =e= L_rate(i) * (1 - sum(tt$(ord(tt) <= ord(t)), Y(i,tt)));
+ 189   
+ 190  * -- 6. Logical Constraint --
+ 191  * Assume for this horizon that a pipe only needs to be fixed once.
+ 192  SingleRepair(i)..
+ 193      sum(t, Y(i,t)) =l= 1;
+ 194   
+ 195  * -----------------------------------------------------------------------------
+ 196  * 5. MODEL AND SOLVE
+ 197  * -----------------------------------------------------------------------------
+ 198   
+ 199  Model LoganLeakModel /all/;
+ 200   
+ 201  * Use MIP (Mixed Integer Programming) because of Binary Variables X and Y
+ 202  Solve LoganLeakModel using mip minimizing Z_obj;
+ 203   
+ 204  * -----------------------------------------------------------------------------
+ 205  * 6. OUTPUT AND ANALYSIS
+ 206  * -----------------------------------------------------------------------------
+ 207   
+ 208  Display Z_obj.l;
+ 209  Display X.l, Y.l;
+ 210  Display W_lost.l;
+ 211   
+ 212  * Calculate portion of cost due to Water Loss vs Maintenance
+ 213  Parameter CostBreakdown(*);
+ 214  CostBreakdown('Inspection') = sum((t,i), C_inspect(i) * X.l(i,t));
+ 215  CostBreakdown('Repair')     = sum((t,i), C_repair(i)  * Y.l(i,t));
+ 216  CostBreakdown('WaterLoss')  = sum((t,i), C_water      * W_lost.l(i,t));
+ 217   
+ 218  Display CostBreakdown;
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 2
+Optimizing Leak Management Strategies for Logan Water Networks
+Equation Listing    SOLVE LoganLeakModel Using MIP From line 202
+
+
+---- ObjFunction  =E=  Minimize total cost
+
+ObjFunction..  Z_obj - 0.82*W_lost(Trans_Dewitt_01,Q1) - 0.82*W_lost(Trans_Dewitt_01,Q2) - 0.82*W_lost(Trans_Dewitt_01,Q3) - 0.82*W_lost(Trans_Dewitt_01,Q4) - 0.82*W_lost(Trans_Dewitt_02,Q1) - 0.82*W_lost(Trans_Dewitt_02,Q2) - 0.82*W_lost(Trans_Dewitt_02,Q3) - 0.82*W_lost(Trans_Dewitt_02,Q4) - 0.82*W_lost(Dist_CastleH_01,Q1) - 0.82*W_lost(Dist_CastleH_01,Q2) - 0.82*W_lost(Dist_CastleH_01,Q3) - 0.82*W_lost(Dist_CastleH_01,Q4) - 0.82*W_lost(Dist_CastleH_02,Q1) - 0.82*W_lost(Dist_CastleH_02,Q2) - 0.82*W_lost(Dist_CastleH_02,Q3) - 0.82*W_lost(Dist_CastleH_02,Q4) - 0.82*W_lost(Dist_CastleH_03,Q1) - 0.82*W_lost(Dist_CastleH_03,Q2) - 0.82*W_lost(Dist_CastleH_03,Q3) - 0.82*W_lost(Dist_CastleH_03,Q4) - 0.82*W_lost(Dist_Upper_01,Q1) - 0.82*W_lost(Dist_Upper_01,Q2) - 0.82*W_lost(Dist_Upper_01,Q3) - 0.82*W_lost(Dist_Upper_01,Q4) - 0.82*W_lost(Dist_Upper_02,Q1) - 0.82*W_lost(Dist_Upper_02,Q2) - 0.82*W_lost(Dist_Upper_02,Q3) - 0.82*W_lost(Dist_Upper_02,Q4) - 1500*X(Trans_Dewitt_01,Q1) - 1500*X(Trans_Dewitt_01,Q2) - 1500*X(Trans_Dewitt_01,Q3) - 1500*X(Trans_Dewitt_01,Q4) - 1500*X(Trans_Dewitt_02,Q1) - 1500*X(Trans_Dewitt_02,Q2) - 1500*X(Trans_Dewitt_02,Q3) - 1500*X(Trans_Dewitt_02,Q4) - 300*X(Dist_CastleH_01,Q1) - 300*X(Dist_CastleH_01,Q2) - 300*X(Dist_CastleH_01,Q3) - 300*X(Dist_CastleH_01,Q4) - 300*X(Dist_CastleH_02,Q1) - 300*X(Dist_CastleH_02,Q2) - 300*X(Dist_CastleH_02,Q3) - 300*X(Dist_CastleH_02,Q4) - 300*X(Dist_CastleH_03,Q1) - 300*X(Dist_CastleH_03,Q2) - 300*X(Dist_CastleH_03,Q3) - 300*X(Dist_CastleH_03,Q4) - 300*X(Dist_Upper_01,Q1) - 300*X(Dist_Upper_01,Q2) - 300*X(Dist_Upper_01,Q3) - 300*X(Dist_Upper_01,Q4) - 300*X(Dist_Upper_02,Q1) - 300*X(Dist_Upper_02,Q2) - 300*X(Dist_Upper_02,Q3) - 300*X(Dist_Upper_02,Q4) - 25000*Y(Trans_Dewitt_01,Q1) - 25000*Y(Trans_Dewitt_01,Q2) - 25000*Y(Trans_Dewitt_01,Q3) - 25000*Y(Trans_Dewitt_01,Q4) - 25000*Y(Trans_Dewitt_02,Q1) - 25000*Y(Trans_Dewitt_02,Q2) - 25000*Y(Trans_Dewitt_02,Q3) - 25000*Y(Trans_Dewitt_02,Q4) - 8000*Y(Dist_CastleH_01,Q1) - 8000*Y(Dist_CastleH_01,Q2) - 8000*Y(Dist_CastleH_01,Q3) - 8000*Y(Dist_CastleH_01,Q4) - 8000*Y(Dist_CastleH_02,Q1) - 8000*Y(Dist_CastleH_02,Q2) - 8000*Y(Dist_CastleH_02,Q3) - 8000*Y(Dist_CastleH_02,Q4) - 8000*Y(Dist_CastleH_03,Q1) - 8000*Y(Dist_CastleH_03,Q2) - 8000*Y(Dist_CastleH_03,Q3) - 8000*Y(Dist_CastleH_03,Q4) - 8000*Y(Dist_Upper_01,Q1) - 8000*Y(Dist_Upper_01,Q2) - 8000*Y(Dist_Upper_01,Q3) - 8000*Y(Dist_Upper_01,Q4) - 8000*Y(Dist_Upper_02,Q1) - 8000*Y(Dist_Upper_02,Q2) - 8000*Y(Dist_Upper_02,Q3) - 8000*Y(Dist_Upper_02,Q4) =E= 0 ; (LHS = 0)
+     
+
+---- BudgetConst  =L=  Total spending cannot exceed quarterly budget
+
+BudgetConst(Q1)..  1500*X(Trans_Dewitt_01,Q1) + 1500*X(Trans_Dewitt_02,Q1) + 300*X(Dist_CastleH_01,Q1) + 300*X(Dist_CastleH_02,Q1) + 300*X(Dist_CastleH_03,Q1) + 300*X(Dist_Upper_01,Q1) + 300*X(Dist_Upper_02,Q1) + 25000*Y(Trans_Dewitt_01,Q1) + 25000*Y(Trans_Dewitt_02,Q1) + 8000*Y(Dist_CastleH_01,Q1) + 8000*Y(Dist_CastleH_02,Q1) + 8000*Y(Dist_CastleH_03,Q1) + 8000*Y(Dist_Upper_01,Q1) + 8000*Y(Dist_Upper_02,Q1) =L= 15000 ; (LHS = 0)
+     
+BudgetConst(Q2)..  1500*X(Trans_Dewitt_01,Q2) + 1500*X(Trans_Dewitt_02,Q2) + 300*X(Dist_CastleH_01,Q2) + 300*X(Dist_CastleH_02,Q2) + 300*X(Dist_CastleH_03,Q2) + 300*X(Dist_Upper_01,Q2) + 300*X(Dist_Upper_02,Q2) + 25000*Y(Trans_Dewitt_01,Q2) + 25000*Y(Trans_Dewitt_02,Q2) + 8000*Y(Dist_CastleH_01,Q2) + 8000*Y(Dist_CastleH_02,Q2) + 8000*Y(Dist_CastleH_03,Q2) + 8000*Y(Dist_Upper_01,Q2) + 8000*Y(Dist_Upper_02,Q2) =L= 45000 ; (LHS = 0)
+     
+BudgetConst(Q3)..  1500*X(Trans_Dewitt_01,Q3) + 1500*X(Trans_Dewitt_02,Q3) + 300*X(Dist_CastleH_01,Q3) + 300*X(Dist_CastleH_02,Q3) + 300*X(Dist_CastleH_03,Q3) + 300*X(Dist_Upper_01,Q3) + 300*X(Dist_Upper_02,Q3) + 25000*Y(Trans_Dewitt_01,Q3) + 25000*Y(Trans_Dewitt_02,Q3) + 8000*Y(Dist_CastleH_01,Q3) + 8000*Y(Dist_CastleH_02,Q3) + 8000*Y(Dist_CastleH_03,Q3) + 8000*Y(Dist_Upper_01,Q3) + 8000*Y(Dist_Upper_02,Q3) =L= 45000 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+
+---- InspectReq  =L=  Cannot repair unless inspected
+
+InspectReq(Trans_Dewitt_01,Q1)..  - X(Trans_Dewitt_01,Q1) + Y(Trans_Dewitt_01,Q1) =L= 0 ; (LHS = 0)
+     
+InspectReq(Trans_Dewitt_01,Q2)..  - X(Trans_Dewitt_01,Q2) + Y(Trans_Dewitt_01,Q2) =L= 0 ; (LHS = 0)
+     
+InspectReq(Trans_Dewitt_01,Q3)..  - X(Trans_Dewitt_01,Q3) + Y(Trans_Dewitt_01,Q3) =L= 0 ; (LHS = 0)
+     
+REMAINING 25 ENTRIES SKIPPED
+
+
+---- DeliveryConst  =G=  Ensure supply meets demand after losses
+
+DeliveryConst(Q1)..  - W_lost(Trans_Dewitt_01,Q1) - W_lost(Trans_Dewitt_02,Q1) - W_lost(Dist_CastleH_01,Q1) - W_lost(Dist_CastleH_02,Q1) - W_lost(Dist_CastleH_03,Q1) - W_lost(Dist_Upper_01,Q1) - W_lost(Dist_Upper_02,Q1) =G= -6400000 ; (LHS = 0)
+     
+DeliveryConst(Q2)..  - W_lost(Trans_Dewitt_01,Q2) - W_lost(Trans_Dewitt_02,Q2) - W_lost(Dist_CastleH_01,Q2) - W_lost(Dist_CastleH_02,Q2) - W_lost(Dist_CastleH_03,Q2) - W_lost(Dist_Upper_01,Q2) - W_lost(Dist_Upper_02,Q2) =G= -4150000 ; (LHS = 0)
+     
+DeliveryConst(Q3)..  - W_lost(Trans_Dewitt_01,Q3) - W_lost(Trans_Dewitt_02,Q3) - W_lost(Dist_CastleH_01,Q3) - W_lost(Dist_CastleH_02,Q3) - W_lost(Dist_CastleH_03,Q3) - W_lost(Dist_Upper_01,Q3) - W_lost(Dist_Upper_02,Q3) =G= -4150000 ; (LHS = 0)
+     
+REMAINING ENTRY SKIPPED
+
+
+---- LeakContinuity  =E=  Calculate water loss based on repair history
+
+LeakContinuity(Trans_Dewitt_01,Q1)..  W_lost(Trans_Dewitt_01,Q1) + 49000*Y(Trans_Dewitt_01,Q1) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
+     
+LeakContinuity(Trans_Dewitt_01,Q2)..  W_lost(Trans_Dewitt_01,Q2) + 49000*Y(Trans_Dewitt_01,Q1) + 49000*Y(Trans_Dewitt_01,Q2) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
+     
+LeakContinuity(Trans_Dewitt_01,Q3)..  W_lost(Trans_Dewitt_01,Q3) + 49000*Y(Trans_Dewitt_01,Q1) + 49000*Y(Trans_Dewitt_01,Q2) + 49000*Y(Trans_Dewitt_01,Q3) =E= 49000 ; (LHS = 0, INFES = 49000 ****)
+     
+REMAINING 25 ENTRIES SKIPPED
+
+
+---- SingleRepair  =L=  Logical constraint: a pipe is repaired max once per year
+
+SingleRepair(Trans_Dewitt_01)..  Y(Trans_Dewitt_01,Q1) + Y(Trans_Dewitt_01,Q2) + Y(Trans_Dewitt_01,Q3) + Y(Trans_Dewitt_01,Q4) =L= 1 ; (LHS = 0)
+     
+SingleRepair(Trans_Dewitt_02)..  Y(Trans_Dewitt_02,Q1) + Y(Trans_Dewitt_02,Q2) + Y(Trans_Dewitt_02,Q3) + Y(Trans_Dewitt_02,Q4) =L= 1 ; (LHS = 0)
+     
+SingleRepair(Dist_CastleH_01)..  Y(Dist_CastleH_01,Q1) + Y(Dist_CastleH_01,Q2) + Y(Dist_CastleH_01,Q3) + Y(Dist_CastleH_01,Q4) =L= 1 ; (LHS = 0)
+     
+REMAINING 4 ENTRIES SKIPPED
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 3
+Optimizing Leak Management Strategies for Logan Water Networks
+Column Listing      SOLVE LoganLeakModel Using MIP From line 202
+
+
+---- Z_obj  Total Cost (Objective Function Value)
+
+Z_obj
+                (.LO, .L, .UP, .M = -INF, 0, +INF, 0)
+        1       ObjFunction
+
+
+---- W_lost  Volume of water lost from pipe i in time t (m3)
+
+W_lost(Trans_Dewitt_01,Q1)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -0.82    ObjFunction
+       -1       DeliveryConst(Q1)
+        1       LeakContinuity(Trans_Dewitt_01,Q1)
+
+W_lost(Trans_Dewitt_01,Q2)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -0.82    ObjFunction
+       -1       DeliveryConst(Q2)
+        1       LeakContinuity(Trans_Dewitt_01,Q2)
+
+W_lost(Trans_Dewitt_01,Q3)
+                (.LO, .L, .UP, .M = 0, 0, +INF, 0)
+       -0.82    ObjFunction
+       -1       DeliveryConst(Q3)
+        1       LeakContinuity(Trans_Dewitt_01,Q3)
+
+REMAINING 25 ENTRIES SKIPPED
+
+---- X  1 if pipe i is inspected in time t
+
+X(Trans_Dewitt_01,Q1)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+    -1500       ObjFunction
+     1500       BudgetConst(Q1)
+       -1       InspectReq(Trans_Dewitt_01,Q1)
+
+X(Trans_Dewitt_01,Q2)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+    -1500       ObjFunction
+     1500       BudgetConst(Q2)
+       -1       InspectReq(Trans_Dewitt_01,Q2)
+
+X(Trans_Dewitt_01,Q3)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+    -1500       ObjFunction
+     1500       BudgetConst(Q3)
+       -1       InspectReq(Trans_Dewitt_01,Q3)
+
+REMAINING 25 ENTRIES SKIPPED
+
+---- Y  1 if pipe i is repaired in time t
+
+Y(Trans_Dewitt_01,Q1)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+   -25000       ObjFunction
+    25000       BudgetConst(Q1)
+        1       InspectReq(Trans_Dewitt_01,Q1)
+    49000       LeakContinuity(Trans_Dewitt_01,Q1)
+    49000       LeakContinuity(Trans_Dewitt_01,Q2)
+    49000       LeakContinuity(Trans_Dewitt_01,Q3)
+    49000       LeakContinuity(Trans_Dewitt_01,Q4)
+        1       SingleRepair(Trans_Dewitt_01)
+
+Y(Trans_Dewitt_01,Q2)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+   -25000       ObjFunction
+    25000       BudgetConst(Q2)
+        1       InspectReq(Trans_Dewitt_01,Q2)
+    49000       LeakContinuity(Trans_Dewitt_01,Q2)
+    49000       LeakContinuity(Trans_Dewitt_01,Q3)
+    49000       LeakContinuity(Trans_Dewitt_01,Q4)
+        1       SingleRepair(Trans_Dewitt_01)
+
+Y(Trans_Dewitt_01,Q3)
+                (.LO, .L, .UP, .M = 0, 0, 1, 0)
+   -25000       ObjFunction
+    25000       BudgetConst(Q3)
+        1       InspectReq(Trans_Dewitt_01,Q3)
+    49000       LeakContinuity(Trans_Dewitt_01,Q3)
+    49000       LeakContinuity(Trans_Dewitt_01,Q4)
+        1       SingleRepair(Trans_Dewitt_01)
+
+REMAINING 25 ENTRIES SKIPPED
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 4
+Optimizing Leak Management Strategies for Logan Water Networks
+Range Statistics    SOLVE LoganLeakModel Using MIP From line 202
+
+
+RANGE STATISTICS (ABSOLUTE NON-ZERO FINITE VALUES)
+
+RHS       [min, max] : [ 1.000E+00, 6.400E+06] - Zero values observed as well
+Bound     [min, max] : [ 1.000E+00, 1.000E+00] - Zero values observed as well
+Matrix    [min, max] : [ 8.200E-01, 4.900E+04]
+
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 5
+Optimizing Leak Management Strategies for Logan Water Networks
+Model Statistics    SOLVE LoganLeakModel Using MIP From line 202
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           6     SINGLE EQUATIONS           72
+BLOCKS OF VARIABLES           4     SINGLE VARIABLES           85
+NON ZERO ELEMENTS           351     DISCRETE VARIABLES         56
+
+
+GENERATION TIME      =        0.156 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 6
+Optimizing Leak Management Strategies for Logan Water Networks
+Solution Report     SOLVE LoganLeakModel Using MIP From line 202
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   LoganLeakModel      OBJECTIVE  Z_obj
+     TYPE    MIP                 DIRECTION  MINIMIZE
+     SOLVER  CPLEX               FROM LINE  202
+
+**** SOLVER STATUS     1 Normal Completion
+**** MODEL STATUS      1 Optimal
+**** OBJECTIVE VALUE           238620.0000
+
+ RESOURCE USAGE, LIMIT          0.047 10000000000.000
+ ITERATION COUNT, LIMIT        32    2147483647
+*** This solver runs with a community license.
+--- GMO setup time: 0.00s
+--- GMO memory 0.52 Mb (peak 0.52 Mb)
+--- Dictionary memory 0.00 Mb
+--- Cplex 22.1.2.0 link memory 0.00 Mb (peak 0.01 Mb)
+--- Starting Cplex
+
+
+--- MIP status (101): integer optimal solution.
+--- Cplex Time: 0.05sec (det. 0.64 ticks)
+
+--- Returning a primal only solution to GAMS (marginals all set to NA).
+--- Fixing integer variables and solving final LP...
+
+
+--- Fixed MIP status (1): optimal.
+--- Cplex Time: 0.00sec (det. 0.07 ticks)
+
+
+Proven optimal solution
+MIP Solution:       238620.000000    (32 iterations, 0 nodes)
+Final Solve:        238620.000000    (0 iterations)
+
+Best possible:      238620.000000
+Absolute gap:            0.000000
+Relative gap:            0.000000
+
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- EQU ObjFuncti~          .              .              .             1.0000      
+
+  ObjFunction  Minimize total cost
+
+---- EQU BudgetConst  Total spending cannot exceed quarterly budget
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+Q1        -INF         8300.0000     15000.0000          .          
+Q2        -INF        43100.0000     45000.0000          .          
+Q3        -INF        26500.0000     45000.0000          .          
+Q4        -INF             .         15000.0000          .          
+
+---- EQU InspectReq  Cannot repair unless inspected
+
+                          LOWER          LEVEL          UPPER         MARGINAL
+
+Trans_Dewitt_01.Q1        -INF             .              .              .          
+Trans_Dewitt_01.Q2        -INF             .              .              .          
+Trans_Dewitt_01.Q3        -INF             .              .              .          
+Trans_Dewitt_01.Q4        -INF             .              .              .          
+Trans_Dewitt_02.Q1        -INF             .              .              .          
+Trans_Dewitt_02.Q2        -INF             .              .              .          
+Trans_Dewitt_02.Q3        -INF             .              .              .          
+Trans_Dewitt_02.Q4        -INF             .              .              .          
+Dist_CastleH_01.Q1        -INF             .              .              .          
+Dist_CastleH_01.Q2        -INF             .              .              .          
+Dist_CastleH_01.Q3        -INF             .              .              .          
+Dist_CastleH_01.Q4        -INF             .              .              .          
+Dist_CastleH_02.Q1        -INF             .              .              .          
+Dist_CastleH_02.Q2        -INF             .              .              .          
+Dist_CastleH_02.Q3        -INF             .              .              .          
+Dist_CastleH_02.Q4        -INF             .              .              .          
+Dist_CastleH_03.Q1        -INF             .              .              .          
+Dist_CastleH_03.Q2        -INF             .              .              .          
+Dist_CastleH_03.Q3        -INF             .              .              .          
+Dist_CastleH_03.Q4        -INF             .              .              .          
+Dist_Upper_01  .Q1        -INF             .              .              .          
+Dist_Upper_01  .Q2        -INF             .              .              .          
+Dist_Upper_01  .Q3        -INF             .              .              .          
+Dist_Upper_01  .Q4        -INF             .              .              .          
+Dist_Upper_02  .Q1        -INF             .              .              .          
+Dist_Upper_02  .Q2        -INF             .              .              .          
+Dist_Upper_02  .Q3        -INF             .              .              .          
+Dist_Upper_02  .Q4        -INF             .              .              .          
+
+---- EQU DeliveryConst  Ensure supply meets demand after losses
+
+          LOWER          LEVEL          UPPER         MARGINAL
+
+Q1   -6.400000E+6   -117600.0000        +INF             .          
+Q2   -4.150000E+6    -58800.0000        +INF             .          
+Q3   -4.150000E+6     -9800.0000        +INF             .          
+Q4   -6.400000E+6     -9800.0000        +INF             .          
+
+---- EQU LeakContinuity  Calculate water loss based on repair history
+
+                          LOWER          LEVEL          UPPER         MARGINAL
+
+Trans_Dewitt_01.Q1     49000.0000     49000.0000     49000.0000         0.8200      
+Trans_Dewitt_01.Q2     49000.0000     49000.0000     49000.0000          .          
+Trans_Dewitt_01.Q3     49000.0000     49000.0000     49000.0000          .          
+Trans_Dewitt_01.Q4     49000.0000     49000.0000     49000.0000          .          
+Trans_Dewitt_02.Q1     49000.0000     49000.0000     49000.0000         0.8200      
+Trans_Dewitt_02.Q2     49000.0000     49000.0000     49000.0000         0.8200      
+Trans_Dewitt_02.Q3     49000.0000     49000.0000     49000.0000          .          
+Trans_Dewitt_02.Q4     49000.0000     49000.0000     49000.0000          .          
+Dist_CastleH_01.Q1      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_01.Q2      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_01.Q3      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_01.Q4      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_02.Q1      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_CastleH_02.Q2      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_02.Q3      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_02.Q4      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_03.Q1      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_CastleH_03.Q2      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_03.Q3      4900.0000      4900.0000      4900.0000          .          
+Dist_CastleH_03.Q4      4900.0000      4900.0000      4900.0000          .          
+Dist_Upper_01  .Q1      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_Upper_01  .Q2      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_Upper_01  .Q3      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_Upper_01  .Q4      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_Upper_02  .Q1      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_Upper_02  .Q2      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_Upper_02  .Q3      4900.0000      4900.0000      4900.0000         0.8200      
+Dist_Upper_02  .Q4      4900.0000      4900.0000      4900.0000         0.8200      
+
+---- EQU SingleRepair  Logical constraint: a pipe is repaired max once per year
+
+                       LOWER          LEVEL          UPPER         MARGINAL
+
+Trans_Dewitt_01        -INF            1.0000         1.0000          .          
+Trans_Dewitt_02        -INF            1.0000         1.0000          .          
+Dist_CastleH_01        -INF            1.0000         1.0000          .          
+Dist_CastleH_02        -INF            1.0000         1.0000          .          
+Dist_CastleH_03        -INF            1.0000         1.0000          .          
+Dist_Upper_01          -INF             .             1.0000          .          
+Dist_Upper_02          -INF             .             1.0000          .          
+
+                           LOWER          LEVEL          UPPER         MARGINAL
+
+---- VAR Z_obj             -INF       238620.0000        +INF             .          
+
+  Z_obj  Total Cost (Objective Function Value)
+
+---- VAR W_lost  Volume of water lost from pipe i in time t (m3)
+
+                          LOWER          LEVEL          UPPER         MARGINAL
+
+Trans_Dewitt_01.Q1          .         49000.0000        +INF             .          
+Trans_Dewitt_01.Q2          .              .            +INF            0.8200      
+Trans_Dewitt_01.Q3          .              .            +INF            0.8200      
+Trans_Dewitt_01.Q4          .              .            +INF            0.8200      
+Trans_Dewitt_02.Q1          .         49000.0000        +INF             .          
+Trans_Dewitt_02.Q2          .         49000.0000        +INF             .          
+Trans_Dewitt_02.Q3          .              .            +INF            0.8200      
+Trans_Dewitt_02.Q4          .              .            +INF            0.8200      
+Dist_CastleH_01.Q1          .              .            +INF            0.8200      
+Dist_CastleH_01.Q2          .              .            +INF            0.8200      
+Dist_CastleH_01.Q3          .              .            +INF            0.8200      
+Dist_CastleH_01.Q4          .              .            +INF            0.8200      
+Dist_CastleH_02.Q1          .          4900.0000        +INF             .          
+Dist_CastleH_02.Q2          .              .            +INF            0.8200      
+Dist_CastleH_02.Q3          .              .            +INF            0.8200      
+Dist_CastleH_02.Q4          .              .            +INF            0.8200      
+Dist_CastleH_03.Q1          .          4900.0000        +INF             .          
+Dist_CastleH_03.Q2          .              .            +INF            0.8200      
+Dist_CastleH_03.Q3          .              .            +INF            0.8200      
+Dist_CastleH_03.Q4          .              .            +INF            0.8200      
+Dist_Upper_01  .Q1          .          4900.0000        +INF             .          
+Dist_Upper_01  .Q2          .          4900.0000        +INF             .          
+Dist_Upper_01  .Q3          .          4900.0000        +INF             .          
+Dist_Upper_01  .Q4          .          4900.0000        +INF             .          
+Dist_Upper_02  .Q1          .          4900.0000        +INF             .          
+Dist_Upper_02  .Q2          .          4900.0000        +INF             .          
+Dist_Upper_02  .Q3          .          4900.0000        +INF             .          
+Dist_Upper_02  .Q4          .          4900.0000        +INF             .          
+
+---- VAR X  1 if pipe i is inspected in time t
+
+                          LOWER          LEVEL          UPPER         MARGINAL
+
+Trans_Dewitt_01.Q1          .              .             1.0000      1500.0000      
+Trans_Dewitt_01.Q2          .             1.0000         1.0000      1500.0000      
+Trans_Dewitt_01.Q3          .              .             1.0000      1500.0000      
+Trans_Dewitt_01.Q4          .              .             1.0000      1500.0000      
+Trans_Dewitt_02.Q1          .              .             1.0000      1500.0000      
+Trans_Dewitt_02.Q2          .              .             1.0000      1500.0000      
+Trans_Dewitt_02.Q3          .             1.0000         1.0000      1500.0000      
+Trans_Dewitt_02.Q4          .              .             1.0000      1500.0000      
+Dist_CastleH_01.Q1          .             1.0000         1.0000       300.0000      
+Dist_CastleH_01.Q2          .              .             1.0000       300.0000      
+Dist_CastleH_01.Q3          .              .             1.0000       300.0000      
+Dist_CastleH_01.Q4          .              .             1.0000       300.0000      
+Dist_CastleH_02.Q1          .              .             1.0000       300.0000      
+Dist_CastleH_02.Q2          .             1.0000         1.0000       300.0000      
+Dist_CastleH_02.Q3          .              .             1.0000       300.0000      
+Dist_CastleH_02.Q4          .              .             1.0000       300.0000      
+Dist_CastleH_03.Q1          .              .             1.0000       300.0000      
+Dist_CastleH_03.Q2          .             1.0000         1.0000       300.0000      
+Dist_CastleH_03.Q3          .              .             1.0000       300.0000      
+Dist_CastleH_03.Q4          .              .             1.0000       300.0000      
+Dist_Upper_01  .Q1          .              .             1.0000       300.0000      
+Dist_Upper_01  .Q2          .              .             1.0000       300.0000      
+Dist_Upper_01  .Q3          .              .             1.0000       300.0000      
+Dist_Upper_01  .Q4          .              .             1.0000       300.0000      
+Dist_Upper_02  .Q1          .              .             1.0000       300.0000      
+Dist_Upper_02  .Q2          .              .             1.0000       300.0000      
+Dist_Upper_02  .Q3          .              .             1.0000       300.0000      
+Dist_Upper_02  .Q4          .              .             1.0000       300.0000      
+
+---- VAR Y  1 if pipe i is repaired in time t
+
+                          LOWER          LEVEL          UPPER         MARGINAL
+
+Trans_Dewitt_01.Q1          .              .             1.0000    -15180.0000      
+Trans_Dewitt_01.Q2          .             1.0000         1.0000     25000.0000      
+Trans_Dewitt_01.Q3          .              .             1.0000     25000.0000      
+Trans_Dewitt_01.Q4          .              .             1.0000     25000.0000      
+Trans_Dewitt_02.Q1          .              .             1.0000    -55360.0000      
+Trans_Dewitt_02.Q2          .              .             1.0000    -15180.0000      
+Trans_Dewitt_02.Q3          .             1.0000         1.0000     25000.0000      
+Trans_Dewitt_02.Q4          .              .             1.0000     25000.0000      
+Dist_CastleH_01.Q1          .             1.0000         1.0000      8000.0000      
+Dist_CastleH_01.Q2          .              .             1.0000      8000.0000      
+Dist_CastleH_01.Q3          .              .             1.0000      8000.0000      
+Dist_CastleH_01.Q4          .              .             1.0000      8000.0000      
+Dist_CastleH_02.Q1          .              .             1.0000      3982.0000      
+Dist_CastleH_02.Q2          .             1.0000         1.0000      8000.0000      
+Dist_CastleH_02.Q3          .              .             1.0000      8000.0000      
+Dist_CastleH_02.Q4          .              .             1.0000      8000.0000      
+Dist_CastleH_03.Q1          .              .             1.0000      3982.0000      
+Dist_CastleH_03.Q2          .             1.0000         1.0000      8000.0000      
+Dist_CastleH_03.Q3          .              .             1.0000      8000.0000      
+Dist_CastleH_03.Q4          .              .             1.0000      8000.0000      
+Dist_Upper_01  .Q1          .              .             1.0000     -8072.0000      
+Dist_Upper_01  .Q2          .              .             1.0000     -4054.0000      
+Dist_Upper_01  .Q3          .              .             1.0000       -36.0000      
+Dist_Upper_01  .Q4          .              .             1.0000      3982.0000      
+Dist_Upper_02  .Q1          .              .             1.0000     -8072.0000      
+Dist_Upper_02  .Q2          .              .             1.0000     -4054.0000      
+Dist_Upper_02  .Q3          .              .             1.0000       -36.0000      
+Dist_Upper_02  .Q4          .              .             1.0000      3982.0000      
+
+
+**** REPORT SUMMARY :        0     NONOPT
+                             0 INFEASIBLE
+                             0  UNBOUNDED
+GAMS 51.1.0  2d039df5 Sep 13, 2025          WEX-WEI x86 64bit/MS Windows - 12/11/25 13:01:18 Page 7
+Optimizing Leak Management Strategies for Logan Water Networks
+E x e c u t i o n
+
+
+----    208 VARIABLE Z_obj.L               =   238620.000  Total Cost (Objective Function Value)
+
+----    209 VARIABLE X.L  1 if pipe i is inspected in time t
+
+                         Q1          Q2          Q3
+
+Trans_Dewitt_01                   1.000
+Trans_Dewitt_02                               1.000
+Dist_CastleH_01       1.000
+Dist_CastleH_02                   1.000
+Dist_CastleH_03                   1.000
+
+
+----    209 VARIABLE Y.L  1 if pipe i is repaired in time t
+
+                         Q1          Q2          Q3
+
+Trans_Dewitt_01                   1.000
+Trans_Dewitt_02                               1.000
+Dist_CastleH_01       1.000
+Dist_CastleH_02                   1.000
+Dist_CastleH_03                   1.000
+
+
+----    210 VARIABLE W_lost.L  Volume of water lost from pipe i in time t (m3)
+
+                         Q1          Q2          Q3          Q4
+
+Trans_Dewitt_01   49000.000
+Trans_Dewitt_02   49000.000   49000.000
+Dist_CastleH_02    4900.000
+Dist_CastleH_03    4900.000
+Dist_Upper_01      4900.000    4900.000    4900.000    4900.000
+Dist_Upper_02      4900.000    4900.000    4900.000    4900.000
+
+
+----    218 PARAMETER CostBreakdown  
+
+Inspection   3900.000,    Repair      74000.000,    WaterLoss  160720.000
+
+
+
+EXECUTION TIME       =        0.609 SECONDS      4 MB  51.1.0 2d039df5 WEX-WEI
+
+
+USER: Course License                                 G250902+0003Ac-GEN
+      Utah State University                                     DCE4709
+      License for teaching and research at degree granting institutions
+
+
+**** FILE SUMMARY
+
+Input      C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\Github repo\CEE-6410-Gilbert\Leak Management Semester Project\LeakManagement.gms
+Output     C:\Users\Skool\OneDrive - USU\2025 Fall\6410 - System Analysis\Github repo\CEE-6410-Gilbert\Leak Management Semester Project\LeakManagement.lst
